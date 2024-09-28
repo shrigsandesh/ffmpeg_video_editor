@@ -5,6 +5,7 @@ import 'package:ffmpeg_video_editor/service/ffmpeg_service.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoEditingScreen extends StatefulWidget {
@@ -18,6 +19,13 @@ class VideoEditingScreen extends StatefulWidget {
 
 class _VideoEditingScreenState extends State<VideoEditingScreen> {
   VideoPlayerController? _controller;
+  late final VideoEditorController _editorController =
+      VideoEditorController.file(
+    File(widget.path),
+    minDuration: const Duration(seconds: 1),
+    maxDuration: const Duration(seconds: 60),
+  );
+
   // ignore: unused_field
   String? _filteredVideoPath;
   bool isFiltering = false;
@@ -26,6 +34,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   void initState() {
     super.initState();
     _loadVideo();
+    _editorController.initialize().then((_) => setState(() {}));
   }
 
   double getFFmpegProgress(int time) {
@@ -94,17 +103,14 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        iconTheme: const IconThemeData(
+          color: Colors.white, //change your color here
+        ),
+        title: const Text(
+          "Editor video",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w400),
+        ),
         backgroundColor: Colors.black,
-        bottom: const PreferredSize(
-            preferredSize: Size.fromHeight(60),
-            child: Row(
-              children: [
-                Icon(Icons.crop),
-                Icon(Icons.crop),
-                Icon(Icons.crop),
-                Icon(Icons.crop),
-              ],
-            )),
       ),
       body: Column(
         children: [
@@ -116,44 +122,57 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                   ),
                 )
               : const Center(child: Text("Error playing video")),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            margin: const EdgeInsets.symmetric(vertical: 20),
+            child: TrimSlider(
+              controller: _editorController,
+              height: 60,
+              horizontalMargin: 20,
+              child: TrimTimeline(
+                controller: _editorController,
+                padding: const EdgeInsets.only(top: 10),
+              ),
+            ),
+          ),
         ],
       ),
-      bottomSheet: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: isFiltering
-            ? LinearPercentIndicator(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                lineHeight: 45,
-                alignment: MainAxisAlignment.center,
-                percent: progress / 100,
-                center: Text(
-                  "Applying filter.. ${progress.truncate()}%",
-                ),
-                barRadius: const Radius.circular(32),
-                backgroundColor: Colors.blue,
-                linearGradient: const LinearGradient(
-                  colors: [
-                    Colors.blue,
-                    Colors.green,
+      bottomSheet: Container(
+        color: Colors.black,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: isFiltering
+              ? LinearPercentIndicator(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  lineHeight: 45,
+                  alignment: MainAxisAlignment.center,
+                  percent: progress / 100,
+                  center: Text(
+                    "Applying filter.. ${progress.truncate()}%",
+                  ),
+                  barRadius: const Radius.circular(32),
+                  backgroundColor: Colors.blue,
+                  linearGradient: const LinearGradient(
+                    colors: [
+                      Colors.blue,
+                      Colors.green,
+                    ],
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    InkWell(
+                        onTap: () async {
+                          _applyFilter();
+                        },
+                        child: const Icon(
+                          Icons.tune,
+                          color: Colors.white,
+                        ))
                   ],
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                      onTap: () async {
-                        _applyFilter();
-                        // await Utils.applyFilter(
-                        //   inputPath: widget.path,
-                        //   onSuccess: (path) async {
-                        //     _playFilteredVideo(path);
-                        //   },
-                        // );
-                      },
-                      child: const Icon(Icons.tune))
-                ],
-              ),
+        ),
       ),
     );
   }
@@ -172,5 +191,6 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   void dispose() {
     super.dispose();
     _controller?.dispose();
+    _editorController.dispose();
   }
 }

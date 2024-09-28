@@ -1,23 +1,26 @@
+import 'package:ffmpeg_video_editor/di/dependency_injection.dart';
 import 'package:ffmpeg_video_editor/utils/utils.dart';
 import 'package:ffmpeg_video_editor/video_editing_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  configureDependencies();
+  runApp(const FFmpegVideoEditorApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class FFmpegVideoEditorApp extends StatelessWidget {
+  const FFmpegVideoEditorApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'Video Editor', home: MyHomePage());
+    return const MaterialApp(home: HomePage());
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
