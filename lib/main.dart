@@ -1,6 +1,6 @@
-import 'package:ffmpeg_video_editor/di/dependency_injection.dart';
-import 'package:ffmpeg_video_editor/utils/utils.dart';
-import 'package:ffmpeg_video_editor/video_editing_screen.dart';
+import 'package:ffmpeg_video_editor/core/di/dependency_injection.dart';
+import 'package:ffmpeg_video_editor/core/utils/utils.dart';
+import 'package:ffmpeg_video_editor/features/video_editor/video_editing_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
