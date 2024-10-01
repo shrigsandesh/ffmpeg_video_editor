@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
@@ -178,4 +179,78 @@ class Utils {
     final seconds = (timeInSeconds % 60).toString().padLeft(2, '0');
     return '$hours:$minutes:$seconds';
   }
+
+  static Future<void> _printErrorLogs(FFmpegSession session) async {
+    // Retrieve the session logs
+    final logs = await session.getLogs();
+
+    // Print each log entry (including error logs)
+    for (var logs in logs) {
+      log('FFmpeg Log: ${logs.getMessage()}');
+    }
+
+    // Retrieve and print statistics (optional)
+    final statistics = await session.getStatistics();
+    log('FFmpeg Statistics: ${statistics.toString()}');
+  }
+
+  static Future<String?> getVideoFPS(String videoPath) async {
+    final command = '-i $videoPath -f null -';
+
+    final session = await FFmpegKit.execute(command);
+    final returnCode = await session.getReturnCode();
+
+    if (ReturnCode.isSuccess(returnCode)) {
+      // Command executed successfully
+      final output = await session.getOutput();
+      // Parse the output to find the FPS
+      final fpsRegex = RegExp(r'(\d+(\.\d+)?)\s*fps');
+
+      if (output != null) {
+        final match = fpsRegex.firstMatch(output);
+        if (match != null) {
+          final fps = match.group(1);
+          log('FPS: $fps');
+          return fps;
+        }
+      } else {
+        log('FPS not found in the output.');
+      }
+    } else {
+      log('Error executing FFmpeg command: $returnCode');
+    }
+    return null;
+  }
+
+  static Future<String> zoomVideo(String inputFilePath, int startFrame) async {
+    log(startFrame.toString());
+    final tempDir = await getTemporaryDirectory();
+    final uniqueId = DateTime.now().millisecondsSinceEpoch;
+    final directory = Directory("${tempDir.path}/videos/$uniqueId/")
+      ..create(recursive: true);
+    final outputPath = "${directory.path}output.mp4";
+
+    String command =
+        '-i "$inputFilePath" -vf "scale=2*iw:-1,crop=iw/2:ih/2" "$outputPath"';
+    final result = await FFmpegKit.execute(command);
+
+    // Check the result
+    final returnCode = await result.getReturnCode();
+    if (ReturnCode.isSuccess(returnCode)) {
+      log("Zoom applied successfully and saved to $outputPath");
+    } else {
+      log("Error occurred: ${await result.getOutput()}");
+    }
+    return outputPath;
+  }
+}
+
+Future<String> getOutputFilePath() async {
+  final tempDir = await getTemporaryDirectory();
+  final uniqueId = DateTime.now().millisecondsSinceEpoch;
+
+  final directory = Directory("${tempDir.path}/videos/$uniqueId/")
+    ..create(recursive: true);
+  final outputPath = "${directory.path}output.mp4";
+  return outputPath;
 }

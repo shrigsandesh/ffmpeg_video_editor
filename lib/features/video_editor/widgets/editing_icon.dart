@@ -23,9 +23,14 @@ class EditingIcon extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white),
+        SizedBox(
+          width: 60,
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+            overflow: TextOverflow.visible,
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );

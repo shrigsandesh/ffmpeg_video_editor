@@ -6,10 +6,12 @@ class EditingOptions extends StatelessWidget {
       {super.key,
       required this.onfilter,
       required this.onTrimAndSave,
-      required this.onDeleteSection});
+      required this.onDeleteSection,
+      required this.onZoom});
   final VoidCallback onfilter;
   final VoidCallback onTrimAndSave;
   final VoidCallback onDeleteSection;
+  final VoidCallback onZoom;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,8 @@ class EditingOptions extends StatelessWidget {
             onEdit: onDeleteSection,
             editingIcon: Icons.delete,
             label: "Delete selected section"),
+        EditingIcon(
+            onEdit: onZoom, editingIcon: Icons.zoom_in, label: "Zoom(2X)"),
       ],
     );
   }
