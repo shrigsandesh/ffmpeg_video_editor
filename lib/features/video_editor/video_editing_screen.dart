@@ -5,6 +5,7 @@ import 'package:ffmpeg_video_editor/core/service/ffmpeg_service.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading.dart';
+import 'package:ffmpeg_video_editor/features/video_editor/widgets/rotate_widget.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:video_editor/video_editor.dart';
@@ -191,6 +192,13 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       body: Column(
         children: [
           if (_editorController.video.value.isInitialized) ...[
+            RotateWidget(
+              onRotateLeft: _onRotate,
+              onRotateRight: () => _onRotate(toleft: false),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
             Stack(
               alignment: Alignment.center,
               children: [
@@ -252,5 +260,46 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   void dispose() {
     _editorController.dispose();
     super.dispose();
+  }
+
+  void _onRotate({bool toleft = true}) async {
+    if (isFiltering) return;
+    setState(() {
+      isFiltering = true;
+    });
+    _editorController.video.pause();
+    String outputPath = await getOutputFilePath();
+    String transpose = toleft ? "\"transpose=2\"" : "\"transpose=1\"";
+    String ffmpegCommand = "-i $_currentVideoPath -vf $transpose $outputPath";
+
+    log(ffmpegCommand);
+    await FFMPEGService().runFFmpegCommand(
+      ffmpegCommand,
+      onProgress: (stats) {
+        if (mounted) {
+          setState(() {
+            progress = (stats.getTime() /
+                    _editorController.video.value.duration.inMilliseconds) *
+                100;
+          });
+        }
+      },
+      onError: (e, s) {
+        log(e.toString());
+        log(s.toString());
+        setState(() {
+          isFiltering = false;
+          progress = 0.0;
+        });
+      },
+      onCompleted: (_) {
+        setState(() {
+          isFiltering = false;
+          progress = 0.0;
+          _currentVideoPath = outputPath;
+        });
+        _playFilteredVideo(outputPath);
+      },
+    );
   }
 }
