@@ -43,7 +43,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     setState(() {});
     _editorController.video.play();
     _getVideoSize(_currentVideoPath);
-    fps = await Utils.getVideoFPS(_currentVideoPath) ?? "Err";
+    fps = await getVideoFPS(_currentVideoPath) ?? "Err";
     setState(() {});
   }
 
@@ -107,8 +107,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         _editorController.video.value.duration.inSeconds;
     final endTrim = _editorController.maxTrim *
         _editorController.video.value.duration.inSeconds;
-    final outputPath =
-        await Utils.trimVideo(_currentVideoPath, startTrim, endTrim);
+    final outputPath = await trimVideo(_currentVideoPath, startTrim, endTrim);
 
     setState(() => _currentVideoPath = outputPath);
     _playFilteredVideo(outputPath);
@@ -122,7 +121,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     final endTrim = _editorController.maxTrim *
         _editorController.video.value.duration.inSeconds;
 
-    final outputPath = await Utils.removeSectionFromVideo(
+    final outputPath = await removeSectionFromVideo(
       inputVideoPath: _currentVideoPath,
       startA: startTrim,
       endB: endTrim,

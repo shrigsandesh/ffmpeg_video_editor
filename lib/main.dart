@@ -78,7 +78,7 @@ class HomePage extends StatelessWidget {
   }
 
   void _selectVideoFile(BuildContext context) async {
-    final result = await Utils.selectVideo();
+    final result = await selectVideo();
     if (result is File) {
       if (!context.mounted) return;
       Navigator.push(
