@@ -23,7 +23,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   late VideoEditorController _editorController;
   late String _currentVideoPath;
   String _videoSize = '';
-  bool isFiltering = false;
+  bool isProcessing = false;
   double progress = 0.0;
   String fps = '';
 
@@ -43,107 +43,23 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     await _editorController.initialize();
     setState(() {});
     _editorController.video.play();
-    _getVideoSize(_currentVideoPath);
+    _getVideoSize();
     fps = await getVideoFPS(_currentVideoPath) ?? "Err";
     setState(() {});
   }
 
-  Future<void> _getVideoSize(String path) async {
-    final file = File(path);
-    final sizeInBytes = await file.length();
+  Future<void> _getVideoSize() async {
+    final sizeInBytes = await File(_currentVideoPath).length();
     setState(() {
       _videoSize = '${(sizeInBytes / (1024 * 1024)).toStringAsFixed(2)} MB';
     });
   }
 
-  Future<void> _applyFilter() async {
-    setState(() => isFiltering = true);
-    String outputPath = await getOutputFilePath();
-    final ffmpegCommand = '-i $_currentVideoPath -vf "hue=s=0" $outputPath';
-
+  Future<void> _runFFmpegCommand(String command,
+      {required String outputPath}) async {
+    setState(() => isProcessing = true);
     await FFMPEGService().runFFmpegCommand(
-      ffmpegCommand,
-      onProgress: (stats) {
-        if (mounted) {
-          setState(() {
-            progress = (stats.getTime() /
-                    _editorController.video.value.duration.inMilliseconds) *
-                100;
-          });
-        }
-      },
-      onError: (e, s) {
-        setState(() {
-          isFiltering = false;
-          progress = 0.0;
-        });
-      },
-      onCompleted: (_) {
-        setState(() {
-          isFiltering = false;
-          progress = 0.0;
-          _currentVideoPath = outputPath;
-        });
-        _playFilteredVideo(outputPath);
-      },
-    );
-  }
-
-  void _playFilteredVideo(String path) async {
-    _editorController.dispose();
-    _editorController = VideoEditorController.file(
-      File(path),
-      minDuration: const Duration(seconds: 0),
-      maxDuration: const Duration(seconds: 60),
-    );
-    await _editorController.initialize();
-    setState(() {});
-    _getVideoSize(_currentVideoPath);
-    _editorController.video.play();
-  }
-
-  Future<void> _trimAndSave() async {
-    _editorController.video.pause();
-    final startTrim = _editorController.minTrim *
-        _editorController.video.value.duration.inSeconds;
-    final endTrim = _editorController.maxTrim *
-        _editorController.video.value.duration.inSeconds;
-    final outputPath = await trimVideo(_currentVideoPath, startTrim, endTrim);
-
-    setState(() => _currentVideoPath = outputPath);
-    _playFilteredVideo(outputPath);
-    _editorController.video.play();
-  }
-
-  Future<void> _deleteSection() async {
-    _editorController.video.pause();
-    final startTrim = _editorController.minTrim *
-        _editorController.video.value.duration.inSeconds;
-    final endTrim = _editorController.maxTrim *
-        _editorController.video.value.duration.inSeconds;
-
-    final outputPath = await removeSectionFromVideo(
-      inputVideoPath: _currentVideoPath,
-      startA: startTrim,
-      endB: endTrim,
-    );
-
-    setState(() => _currentVideoPath = outputPath);
-    _playFilteredVideo(outputPath);
-  }
-
-  Future<void> _zoomIntoVideo() async {
-    if (isFiltering) return;
-    setState(() {
-      isFiltering = true;
-    });
-    _editorController.video.pause();
-    String outputPath = await getOutputFilePath();
-    String ffmpegCommand =
-        '-i $_currentVideoPath -vf "scale=2*iw:-1,crop=iw/2:ih/2" $outputPath';
-    log(ffmpegCommand);
-    await FFMPEGService().runFFmpegCommand(
-      ffmpegCommand,
+      command,
       onProgress: (stats) {
         if (mounted) {
           setState(() {
@@ -157,27 +73,82 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         log(e.toString());
         log(s.toString());
         setState(() {
-          isFiltering = false;
+          isProcessing = false;
           progress = 0.0;
         });
       },
       onCompleted: (_) {
         setState(() {
-          isFiltering = false;
+          isProcessing = false;
           progress = 0.0;
           _currentVideoPath = outputPath;
         });
-        _playFilteredVideo(outputPath);
+        _playVideo(outputPath);
       },
     );
   }
 
-  getCurrentFrame() async {
-    final currentPosition = await _editorController.video.position;
-    double currentTimeInSeconds = currentPosition?.inSeconds.toDouble() ?? 0.0;
-    int currentFrame =
-        (currentTimeInSeconds * (double.tryParse(fps) ?? 30.0)).round();
-    return currentFrame;
+  Future<void> _playVideo(String path) async {
+    _editorController.dispose();
+    _editorController = VideoEditorController.file(
+      File(path),
+      minDuration: const Duration(seconds: 0),
+      maxDuration: const Duration(seconds: 60),
+    );
+    await _editorController.initialize();
+    setState(() {});
+    _getVideoSize();
+    _editorController.video.play();
+  }
+
+  Future<void> _applyFilter() async {
+    final outputPath = await getOutputFilePath();
+    final ffmpegCommand = '-i $_currentVideoPath -vf "hue=s=0" $outputPath';
+    await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
+  }
+
+  Future<void> _trimAndSave() async {
+    _editorController.video.pause();
+    final startTrim = _editorController.minTrim *
+        _editorController.video.value.duration.inSeconds;
+    final endTrim = _editorController.maxTrim *
+        _editorController.video.value.duration.inSeconds;
+    final outputPath = await trimVideo(_currentVideoPath, startTrim, endTrim);
+
+    setState(() => _currentVideoPath = outputPath);
+    _playVideo(outputPath);
+  }
+
+  Future<void> _deleteSection() async {
+    _editorController.video.pause();
+    final startTrim = _editorController.minTrim *
+        _editorController.video.value.duration.inSeconds;
+    final endTrim = _editorController.maxTrim *
+        _editorController.video.value.duration.inSeconds;
+    final outputPath = await removeSectionFromVideo(
+      inputVideoPath: _currentVideoPath,
+      startA: startTrim,
+      endB: endTrim,
+    );
+
+    setState(() => _currentVideoPath = outputPath);
+    _playVideo(outputPath);
+  }
+
+  Future<void> _zoomIntoVideo() async {
+    if (isProcessing) return;
+    final outputPath = await getOutputFilePath();
+    final ffmpegCommand =
+        '-i $_currentVideoPath -vf "scale=2*iw:-1,crop=iw/2:ih/2" $outputPath';
+    await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
+  }
+
+  Future<void> _onRotate({bool toLeft = true}) async {
+    if (isProcessing) return;
+    final outputPath = await getOutputFilePath();
+    final transpose = toLeft ? "transpose=2" : "transpose=1";
+    final ffmpegCommand = '-i $_currentVideoPath -vf "$transpose" $outputPath';
+    await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
   }
 
   @override
@@ -194,18 +165,16 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
           if (_editorController.video.value.isInitialized) ...[
             RotateWidget(
               onRotateLeft: _onRotate,
-              onRotateRight: () => _onRotate(toleft: false),
+              onRotateRight: () => _onRotate(toLeft: false),
             ),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
             Stack(
               alignment: Alignment.center,
               children: [
                 FittedBox(
                   fit: BoxFit.contain,
                   child: SizedBox(
-                    height: MediaQuery.of(context).size.height * .66,
+                    height: MediaQuery.of(context).size.height * .5,
                     child: AspectRatio(
                       aspectRatio: _editorController.video.value.aspectRatio,
                       child: VideoPlayer(_editorController.video),
@@ -219,7 +188,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                if (!isFiltering)
+                if (!isProcessing)
                   IconButton.outlined(
                     onPressed: () {
                       _editorController.video.value.isPlaying
@@ -231,16 +200,15 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                         : Icons.play_arrow),
                     color: Colors.white,
                   ),
-                if (isFiltering) ExportLoading(progress: progress),
+                if (isProcessing) ExportLoading(progress: progress),
               ],
             ),
             TrimmerTimeline(controller: _editorController),
           ] else
             const Center(
-                child: Text(
-              "Error playing video",
-              style: TextStyle(color: Colors.white),
-            )),
+              child: Text("Error playing video",
+                  style: TextStyle(color: Colors.white)),
+            ),
         ],
       ),
       bottomSheet: Container(
@@ -260,46 +228,5 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   void dispose() {
     _editorController.dispose();
     super.dispose();
-  }
-
-  void _onRotate({bool toleft = true}) async {
-    if (isFiltering) return;
-    setState(() {
-      isFiltering = true;
-    });
-    _editorController.video.pause();
-    String outputPath = await getOutputFilePath();
-    String transpose = toleft ? "\"transpose=2\"" : "\"transpose=1\"";
-    String ffmpegCommand = "-i $_currentVideoPath -vf $transpose $outputPath";
-
-    log(ffmpegCommand);
-    await FFMPEGService().runFFmpegCommand(
-      ffmpegCommand,
-      onProgress: (stats) {
-        if (mounted) {
-          setState(() {
-            progress = (stats.getTime() /
-                    _editorController.video.value.duration.inMilliseconds) *
-                100;
-          });
-        }
-      },
-      onError: (e, s) {
-        log(e.toString());
-        log(s.toString());
-        setState(() {
-          isFiltering = false;
-          progress = 0.0;
-        });
-      },
-      onCompleted: (_) {
-        setState(() {
-          isFiltering = false;
-          progress = 0.0;
-          _currentVideoPath = outputPath;
-        });
-        _playFilteredVideo(outputPath);
-      },
-    );
   }
 }
