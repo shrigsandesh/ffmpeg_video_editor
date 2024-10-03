@@ -23,7 +23,7 @@ class ExportLoading extends StatelessWidget {
         ],
       ),
       footer: const Text(
-        "Applying filter..",
+        "Processing..",
         style: TextStyle(color: Colors.white),
       ),
     );

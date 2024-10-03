@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
@@ -21,16 +23,24 @@ class FFMPEGService {
     void Function(Statistics)? onProgress,
   }) {
     debugPrint('FFmpeg start process with command = $command');
+
     return FFmpegKit.executeAsync(
       command,
       (session) async {
         final state =
             FFmpegKitConfig.sessionStateToString(await session.getState());
         final code = await session.getReturnCode();
+        final output = await session.getOutput(); // Full log output
 
         if (ReturnCode.isSuccess(code)) {
           onCompleted(code);
         } else {
+          // There was an error
+          final errorLogs =
+              await session.getFailStackTrace(); // Capture failure stack trace
+          log("FFmpeg command failed with return code: $code");
+          log("Error logs: $errorLogs");
+          log("Full output: $output");
           if (onError != null) {
             onError(
               Exception(

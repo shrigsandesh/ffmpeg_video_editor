@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_video_editor/core/service/ffmpeg_service.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
@@ -8,6 +9,7 @@ import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/rotate_widget.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
 
@@ -56,7 +58,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   }
 
   Future<void> _runFFmpegCommand(String command,
-      {required String outputPath}) async {
+      {required String outputPath, bool play = true}) async {
     setState(() => isProcessing = true);
     await FFMPEGService().runFFmpegCommand(
       command,
@@ -72,6 +74,13 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       onError: (e, s) {
         log(e.toString());
         log(s.toString());
+        const snackBar = SnackBar(
+          content: Text('Error processing video!'),
+        );
+
+// Find the ScaffoldMessenger in the widget tree
+// and use it to show a SnackBar.
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
         setState(() {
           isProcessing = false;
           progress = 0.0;
@@ -81,9 +90,13 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         setState(() {
           isProcessing = false;
           progress = 0.0;
-          _currentVideoPath = outputPath;
+          if (play) {
+            _currentVideoPath = outputPath;
+          }
         });
-        _playVideo(outputPath);
+        if (play == true) {
+          _playVideo(outputPath);
+        }
       },
     );
   }
@@ -125,14 +138,62 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         _editorController.video.value.duration.inSeconds;
     final endTrim = _editorController.maxTrim *
         _editorController.video.value.duration.inSeconds;
-    final outputPath = await removeSectionFromVideo(
-      inputVideoPath: _currentVideoPath,
-      startA: startTrim,
-      endB: endTrim,
-    );
+    final tempDir = await getTemporaryDirectory();
+    final uniqueId = DateTime.now().millisecondsSinceEpoch;
+    final directory = Directory("${tempDir.path}/videos/$uniqueId/")
+      ..create(recursive: true);
+    final beforePath = '${directory.path}before_A.mp4';
+    final afterPath = '${directory.path}after_B.mp4';
+    final outputPath = '${directory.path}final_output.mp4';
 
-    setState(() => _currentVideoPath = outputPath);
-    _playVideo(outputPath);
+    double videoDuration = await _getVideoDuration(_currentVideoPath);
+    bool hasBeforeSegment = startTrim > 0;
+    bool hasAfterSegment = endTrim < videoDuration;
+    if (hasBeforeSegment) {
+      final beforeCommand =
+          '-i "$_currentVideoPath" -ss 0 -t $startTrim -c copy $beforePath';
+      await _runFFmpegCommand(beforeCommand,
+          outputPath: outputPath, play: false);
+    } else {
+      log('No segment before point A to extract (A starts at 0 seconds)');
+    }
+    if (hasAfterSegment) {
+      final afterCommand =
+          '-i "$_currentVideoPath" -ss $endTrim -c copy $afterPath';
+      await _runFFmpegCommand(afterCommand,
+          outputPath: outputPath, play: false);
+    } else {
+      log('No segment after point B to extract (B ends at video duration)');
+    }
+
+    final concatFile = File('${directory.path}concat_list.txt');
+
+    // Write file paths into the concat file based on the presence of segments
+    if (hasBeforeSegment && hasAfterSegment) {
+      concatFile.writeAsStringSync("file '$beforePath'\nfile '$afterPath'\n");
+    } else if (hasBeforeSegment) {
+      concatFile.writeAsStringSync("file '$beforePath'\n");
+    } else if (hasAfterSegment) {
+      concatFile.writeAsStringSync("file '$afterPath'\n");
+    } else {
+      log('No segments to concatenate');
+    }
+
+    // Verify the content of the file list
+    String writtenFiles = await concatFile.readAsString();
+    log('Contents of concat_list.txt:\n$writtenFiles');
+    final concatCommand =
+        '-f concat -safe 0 -i "${concatFile.path}" -c copy $outputPath';
+    await _runFFmpegCommand(concatCommand, outputPath: outputPath);
+
+    // final outputPath = await removeSectionFromVideo(
+    //   inputVideoPath: _currentVideoPath,
+    //   startA: startTrim,
+    //   endB: endTrim,
+    // );
+
+    // setState(() => _currentVideoPath = outputPath);
+    // _playVideo(outputPath);
   }
 
   Future<void> _zoomIntoVideo() async {
@@ -149,6 +210,36 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     final transpose = toLeft ? "transpose=2" : "transpose=1";
     final ffmpegCommand = '-i $_currentVideoPath -vf "$transpose" $outputPath';
     await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
+  }
+
+  Future<double> _getVideoDuration(String videoPath) async {
+    final session = await FFprobeKit.getMediaInformation(videoPath);
+    final info = session.getMediaInformation();
+    if (info != null) {
+      final durationStr = info.getDuration();
+      return double.parse(durationStr ?? '0');
+    }
+    return 0;
+  }
+
+  Future<void> _addSubtitlesToVideo() async {
+    try {
+      File subtitle = await loadSrtFromAssets('assets/subtitles.srt');
+      String subtitlePath = subtitle.path;
+      if (await subtitle.exists()) {
+        log("file exists");
+      } else {
+        log("no subtitle found");
+      }
+
+      String outputPath = await getOutputFilePath();
+      final command =
+          '-i $_currentVideoPath -vf subtitles=$subtitlePath" $outputPath -report';
+      log(command);
+      await _runFFmpegCommand(command, outputPath: outputPath);
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   @override
@@ -205,10 +296,11 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
             ),
             TrimmerTimeline(controller: _editorController),
           ] else
-            const Center(
-              child: Text("Error playing video",
-                  style: TextStyle(color: Colors.white)),
-            ),
+            const Center(child: CircularProgressIndicator()
+
+                // Text("Error playing video",
+                //     style: TextStyle(color: Colors.white)),
+                ),
         ],
       ),
       bottomSheet: Container(
@@ -219,6 +311,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
           onTrimAndSave: _trimAndSave,
           onDeleteSection: _deleteSection,
           onZoom: _zoomIntoVideo,
+          onAddSubitles: _addSubtitlesToVideo,
         ),
       ),
     );

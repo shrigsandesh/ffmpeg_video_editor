@@ -13,26 +13,26 @@ class EditingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: onEdit,
-          child: Icon(
+    return InkWell(
+      onTap: onEdit,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
             editingIcon,
             color: Colors.white,
           ),
-        ),
-        SizedBox(
-          width: 60,
-          child: Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-            overflow: TextOverflow.visible,
-            textAlign: TextAlign.center,
+          SizedBox(
+            width: 60,
+            child: Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              overflow: TextOverflow.visible,
+              textAlign: TextAlign.center,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

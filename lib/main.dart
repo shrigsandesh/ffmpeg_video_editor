@@ -79,13 +79,14 @@ class HomePage extends StatelessWidget {
 
   void _selectVideoFile(BuildContext context) async {
     final result = await selectVideo();
-    if (result is File) {
+    if (result is List<File>) {
       if (!context.mounted) return;
+
       Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => VideoEditingScreen(
-              path: result.path,
+              path: result.first.path,
             ),
           ));
     }

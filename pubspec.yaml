@@ -25,6 +25,9 @@ dependencies:
   video_editor: ^3.0.0
   get_it: ^7.7.0
   injectable: ^2.4.4
+  image_picker: ^1.0.0
+  video_thumbnail: ^0.5.3
+  device_info_plus: ^10.1.2
  
 dev_dependencies:
   flutter_test:
@@ -38,6 +41,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/sample.mp4
+    - assets/subtitles.srt
+
 
 
   
