@@ -1,13 +1,17 @@
 import 'package:ffmpeg_video_editor/core/di/dependency_injection.dart';
-import 'package:ffmpeg_video_editor/core/utils/utils.dart';
-import 'package:ffmpeg_video_editor/features/video_editor/video_editing_screen.dart';
+import 'package:ffmpeg_video_editor/features/custom_video_picker/screens/video_picker_page.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
+
+import 'package:photo_manager/photo_manager.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   configureDependencies();
-  runApp(const FFmpegVideoEditorApp());
+  requestPermission().then((isGranted) {
+    if (isGranted) {
+      runApp(const FFmpegVideoEditorApp());
+    }
+  });
 }
 
 class FFmpegVideoEditorApp extends StatelessWidget {
@@ -78,17 +82,16 @@ class HomePage extends StatelessWidget {
   }
 
   void _selectVideoFile(BuildContext context) async {
-    final result = await selectVideo();
-    if (result is List<File>) {
-      if (!context.mounted) return;
-
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VideoEditingScreen(
-              path: result.first.path,
-            ),
-          ));
-    }
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const VideoPickerPage(),
+        ));
   }
+}
+
+Future<bool> requestPermission() async {
+  final PermissionState permission =
+      await PhotoManager.requestPermissionExtend();
+  return permission.isAuth;
 }

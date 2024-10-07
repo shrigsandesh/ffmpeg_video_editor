@@ -10,12 +10,14 @@ import 'package:ffmpeg_video_editor/features/video_editor/widgets/rotate_widget.
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoEditingScreen extends StatefulWidget {
-  const VideoEditingScreen({super.key, required this.path});
-  final String path;
+  const VideoEditingScreen({super.key, required this.pickedVideos});
+
+  final List<AssetEntity> pickedVideos;
 
   @override
   State<VideoEditingScreen> createState() => _VideoEditingScreenState();
@@ -32,11 +34,15 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   @override
   void initState() {
     super.initState();
-    _currentVideoPath = widget.path;
     _loadVideo();
   }
 
   Future<void> _loadVideo() async {
+    File? videoFile = await widget.pickedVideos.first.file;
+    if (videoFile != null) {
+      _currentVideoPath = videoFile.path;
+    }
+
     _editorController = VideoEditorController.file(
       File(_currentVideoPath),
       minDuration: const Duration(seconds: 1),
