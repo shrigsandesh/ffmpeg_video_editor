@@ -53,7 +53,7 @@ class VideoPickerBottomSheet extends StatelessWidget {
 
                   joinVideos(videoPaths).then((file) {
                     if (file != null) {
-                      if (!context.mounted) return;
+                      // if (!context.mounted) return;
                       log(file.path);
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => VideoEditingScreen(
@@ -62,7 +62,12 @@ class VideoPickerBottomSheet extends StatelessWidget {
                         ),
                       ));
                     }
-                  });
+                  }).onError(
+                    (error, stackTrace) {
+                      log(error.toString());
+                      log(stackTrace.toString());
+                    },
+                  );
                   // navigate to next page
                 },
               )

@@ -246,6 +246,20 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     }
   }
 
+  double _getCorrectDimension(VideoPlayerController controller,
+      {bool isWidth = false}) {
+    final size = controller.value.size;
+    return isWidth
+        ? (size.width > size.height ? size.width : size.height)
+        : (size.width > size.height ? size.height : size.width);
+  }
+
+// Helper method to check if the video is in landscape mode
+  bool _isLandscape(VideoPlayerController controller) {
+    final size = controller.value.size;
+    return size.width > size.height;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,13 +280,20 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
             Stack(
               alignment: Alignment.center,
               children: [
-                FittedBox(
-                  fit: BoxFit.contain,
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height * .5,
-                    child: AspectRatio(
-                      aspectRatio: _editorController!.video.value.aspectRatio,
-                      child: VideoPlayer(_editorController!.video),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height / 2,
+                  width: MediaQuery.of(context).size.height / 1.1,
+                  child: FittedBox(
+                    child: SizedBox(
+                      height: _getCorrectDimension(_editorController!.video),
+                      width: _getCorrectDimension(_editorController!.video,
+                          isWidth: true),
+                      child: Transform.rotate(
+                        angle: _isLandscape(_editorController!.video)
+                            ? 0
+                            : 90 * 3.1415926535 / 180,
+                        child: VideoPlayer(_editorController!.video),
+                      ),
                     ),
                   ),
                 ),
