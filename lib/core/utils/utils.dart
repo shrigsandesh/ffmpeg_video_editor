@@ -7,6 +7,7 @@ import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 
@@ -342,4 +343,23 @@ Future<List<File>> getVideoFiles(List<AssetEntity> pickedVideos) async {
     }
   }
   return files;
+}
+
+Future<String?> trimAudioToFitVideo(String videoPath, String audioPath) async {
+  String outputVideoPath = await getOutputFilePath();
+
+  // FFmpeg command to trim audio and combine it with the video
+  String ffmpegCommand =
+      '-i $videoPath -i $audioPath -c:v copy -map 0:v -map 1:a -shortest $outputVideoPath';
+
+  await FFmpegKit.execute(ffmpegCommand).then((session) async {
+    final returnCode = await session.getReturnCode();
+    if (ReturnCode.isSuccess(returnCode)) {
+      log('Audio trimmed and added successfully to video.');
+    } else {
+      log('Failed to trim audio or combine it with video.');
+      return null;
+    }
+  });
+  return outputVideoPath;
 }

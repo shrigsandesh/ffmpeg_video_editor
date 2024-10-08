@@ -1,15 +1,14 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:ffmpeg_video_editor/core/service/ffmpeg_service.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/rotate_widget.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -311,12 +310,19 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       bottomSheet: Container(
         color: Colors.black,
         padding: const EdgeInsets.all(8.0),
-        child: EditingOptions(
-          onfilter: _applyFilter,
-          onTrimAndSave: _trimAndSave,
-          onDeleteSection: _deleteSection,
-          onZoom: _zoomIntoVideo,
-          onAddSubitles: _addSubtitlesToVideo,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+                onPressed: _pickAudio, child: const Text('Add audio')),
+            EditingOptions(
+              onfilter: _applyFilter,
+              onTrimAndSave: _trimAndSave,
+              onDeleteSection: _deleteSection,
+              onZoom: _zoomIntoVideo,
+              onAddSubitles: _addSubtitlesToVideo,
+            ),
+          ],
         ),
       ),
     );
@@ -326,5 +332,26 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   void dispose() {
     _editorController?.dispose();
     super.dispose();
+  }
+
+  void _pickAudio() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      log(file.path);
+      String? updatedPath =
+          await trimAudioToFitVideo(_currentVideoPath, file.path);
+      log(updatedPath.toString());
+      if (updatedPath != null) {
+        setState(() {
+          _currentVideoPath = updatedPath;
+        });
+      }
+
+      _playVideo(_currentVideoPath);
+    } else {
+      // User canceled the picker
+    }
   }
 }
