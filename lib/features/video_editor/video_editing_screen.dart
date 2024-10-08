@@ -342,6 +342,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
               isAudioSelected: isAudioSelected,
               onTap: _pickAudio,
               fileName: fileName,
+              onRemove: _removeAudio,
             ),
             EditingOptions(
               onfilter: _applyFilter,
@@ -383,5 +384,16 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     } else {
       // User canceled the picker
     }
+  }
+
+  void _removeAudio() async {
+    String updatedPath = await removeAudioFromVideo(_currentVideoPath);
+
+    setState(() {
+      _currentVideoPath = updatedPath;
+      isAudioSelected = false;
+    });
+
+    _playVideo(_currentVideoPath);
   }
 }

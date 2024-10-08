@@ -361,3 +361,21 @@ Future<String?> trimAudioToFitVideo(String videoPath, String audioPath) async {
   });
   return outputVideoPath;
 }
+
+Future<String> removeAudioFromVideo(String videoPath) async {
+  String outputVideoPath = await getOutputFilePath();
+
+  // FFmpeg command to trim audio and combine it with the video
+  String ffmpegCommand = '-i $videoPath  -c:v copy -an $outputVideoPath';
+
+  await FFmpegKit.execute(ffmpegCommand).then((session) async {
+    final returnCode = await session.getReturnCode();
+    if (ReturnCode.isSuccess(returnCode)) {
+      log('Audio deleted sucessfully.');
+    } else {
+      log('Failed to delete audio.');
+      return null;
+    }
+  });
+  return outputVideoPath;
+}

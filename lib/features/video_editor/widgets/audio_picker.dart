@@ -5,12 +5,14 @@ class AudioPicker extends StatelessWidget {
       {super.key,
       required this.isAudioSelected,
       this.fileName,
-      required this.onTap});
+      required this.onTap,
+      required this.onRemove});
 
   final bool isAudioSelected;
   final String? fileName;
 
   final VoidCallback onTap;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,6 @@ class AudioPicker extends StatelessWidget {
         ),
         child: isAudioSelected
             ? Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
                     Icons.music_note,
@@ -36,13 +37,28 @@ class AudioPicker extends StatelessWidget {
                     fileName!,
                     style: const TextStyle(color: Colors.white),
                   ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                    ),
+                    onPressed: onRemove,
+                  ),
                 ],
               )
-            : const Center(
-                child: Text(
-                  "Pick Audio File",
-                  style: TextStyle(color: Colors.white),
-                ),
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                  Text(
+                    "Pick Audio File",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
       ),
     );
