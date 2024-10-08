@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:photo_manager/photo_manager.dart';
 
 Future<void> applyFilter(
     {required Function(String) onSuccess, required String inputPath}) async {
@@ -303,4 +304,42 @@ Future<File?> joinVideos(List<File> videoFiles) async {
   } else {
     return null; // Return null if something went wrong.
   }
+}
+
+Future<String?> mergeVideos(List<AssetEntity> pickedVideos) async {
+  List<String> videoPaths = [];
+  for (AssetEntity video in pickedVideos) {
+    // Retrieve the File for each video
+    File? videoFile = await video.file;
+    if (videoFile != null) {
+      videoPaths.add(videoFile.path); // Add the file path to the list
+    }
+  }
+  String outputPath = await getOutputFilePath();
+  String concatCommand = "concat:${videoPaths.join('|')}";
+  String command = "-i \"$concatCommand\" -c copy $outputPath";
+
+  await FFmpegKit.execute(command).then((session) async {
+    final returnCode = await session.getReturnCode();
+    if (ReturnCode.isSuccess(returnCode)) {
+      log('Merge successful');
+      return outputPath;
+    } else {
+      log('Merge failed');
+      return null;
+    }
+  });
+  return null;
+}
+
+Future<List<File>> getVideoFiles(List<AssetEntity> pickedVideos) async {
+  List<File> files = [];
+  for (AssetEntity video in pickedVideos) {
+    // Retrieve the File for each video
+    File? videoFile = await video.file;
+    if (videoFile != null) {
+      files.add(videoFile); // Add the file to the list
+    }
+  }
+  return files;
 }

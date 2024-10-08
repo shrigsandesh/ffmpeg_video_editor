@@ -1,7 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:ffmpeg_video_editor/core/service/ffmpeg_service.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
@@ -15,16 +17,18 @@ import 'package:video_editor/video_editor.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoEditingScreen extends StatefulWidget {
-  const VideoEditingScreen({super.key, required this.pickedVideos});
+  const VideoEditingScreen(
+      {super.key, required this.pickedVideos, required this.filePath});
 
   final List<AssetEntity> pickedVideos;
+  final String filePath;
 
   @override
   State<VideoEditingScreen> createState() => _VideoEditingScreenState();
 }
 
 class _VideoEditingScreenState extends State<VideoEditingScreen> {
-  late VideoEditorController _editorController;
+  VideoEditorController? _editorController;
   late String _currentVideoPath;
   String _videoSize = '';
   bool isProcessing = false;
@@ -38,19 +42,15 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   }
 
   Future<void> _loadVideo() async {
-    File? videoFile = await widget.pickedVideos.first.file;
-    if (videoFile != null) {
-      _currentVideoPath = videoFile.path;
-    }
-
+    _currentVideoPath = widget.filePath;
     _editorController = VideoEditorController.file(
       File(_currentVideoPath),
       minDuration: const Duration(seconds: 1),
       maxDuration: const Duration(seconds: 60),
     );
-    await _editorController.initialize();
+    await _editorController?.initialize();
     setState(() {});
-    _editorController.video.play();
+    _editorController?.video.play();
     _getVideoSize();
     fps = await getVideoFPS(_currentVideoPath) ?? "Err";
     setState(() {});
@@ -72,7 +72,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         if (mounted) {
           setState(() {
             progress = (stats.getTime() /
-                    _editorController.video.value.duration.inMilliseconds) *
+                    _editorController!.video.value.duration.inMilliseconds) *
                 100;
           });
         }
@@ -84,8 +84,6 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
           content: Text('Error processing video!'),
         );
 
-// Find the ScaffoldMessenger in the widget tree
-// and use it to show a SnackBar.
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         setState(() {
           isProcessing = false;
@@ -108,16 +106,16 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   }
 
   Future<void> _playVideo(String path) async {
-    _editorController.dispose();
+    _editorController?.dispose();
     _editorController = VideoEditorController.file(
       File(path),
       minDuration: const Duration(seconds: 0),
       maxDuration: const Duration(seconds: 60),
     );
-    await _editorController.initialize();
+    await _editorController?.initialize();
     setState(() {});
     _getVideoSize();
-    _editorController.video.play();
+    _editorController?.video.play();
   }
 
   Future<void> _applyFilter() async {
@@ -127,11 +125,11 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   }
 
   Future<void> _trimAndSave() async {
-    _editorController.video.pause();
-    final startTrim = _editorController.minTrim *
-        _editorController.video.value.duration.inSeconds;
-    final endTrim = _editorController.maxTrim *
-        _editorController.video.value.duration.inSeconds;
+    _editorController?.video.pause();
+    final startTrim = _editorController!.minTrim *
+        _editorController!.video.value.duration.inSeconds;
+    final endTrim = _editorController!.maxTrim *
+        _editorController!.video.value.duration.inSeconds;
     final outputPath = await trimVideo(_currentVideoPath, startTrim, endTrim);
 
     setState(() => _currentVideoPath = outputPath);
@@ -139,11 +137,11 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   }
 
   Future<void> _deleteSection() async {
-    _editorController.video.pause();
-    final startTrim = _editorController.minTrim *
-        _editorController.video.value.duration.inSeconds;
-    final endTrim = _editorController.maxTrim *
-        _editorController.video.value.duration.inSeconds;
+    _editorController?.video.pause();
+    final startTrim = _editorController!.minTrim *
+        _editorController!.video.value.duration.inSeconds;
+    final endTrim = _editorController!.maxTrim *
+        _editorController!.video.value.duration.inSeconds;
     final tempDir = await getTemporaryDirectory();
     final uniqueId = DateTime.now().millisecondsSinceEpoch;
     final directory = Directory("${tempDir.path}/videos/$uniqueId/")
@@ -214,7 +212,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     if (isProcessing) return;
     final outputPath = await getOutputFilePath();
     final transpose = toLeft ? "transpose=2" : "transpose=1";
-    final ffmpegCommand = '-i $_currentVideoPath -vf "$transpose" $outputPath';
+    final ffmpegCommand =
+        '-i $_currentVideoPath -vf "$transpose" -c:a copy $outputPath';
     await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
   }
 
@@ -259,7 +258,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       ),
       body: Column(
         children: [
-          if (_editorController.video.value.isInitialized) ...[
+          if (_editorController?.video.value.isInitialized ?? false) ...[
             RotateWidget(
               onRotateLeft: _onRotate,
               onRotateRight: () => _onRotate(toLeft: false),
@@ -273,8 +272,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                   child: SizedBox(
                     height: MediaQuery.of(context).size.height * .5,
                     child: AspectRatio(
-                      aspectRatio: _editorController.video.value.aspectRatio,
-                      child: VideoPlayer(_editorController.video),
+                      aspectRatio: _editorController!.video.value.aspectRatio,
+                      child: VideoPlayer(_editorController!.video),
                     ),
                   ),
                 ),
@@ -288,11 +287,11 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                 if (!isProcessing)
                   IconButton.outlined(
                     onPressed: () {
-                      _editorController.video.value.isPlaying
-                          ? _editorController.video.pause()
-                          : _editorController.video.play();
+                      _editorController!.video.value.isPlaying
+                          ? _editorController!.video.pause()
+                          : _editorController!.video.play();
                     },
-                    icon: Icon(_editorController.video.value.isPlaying
+                    icon: Icon(_editorController!.video.value.isPlaying
                         ? Icons.pause
                         : Icons.play_arrow),
                     color: Colors.white,
@@ -300,7 +299,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                 if (isProcessing) ExportLoading(progress: progress),
               ],
             ),
-            TrimmerTimeline(controller: _editorController),
+            TrimmerTimeline(controller: _editorController!),
           ] else
             const Center(child: CircularProgressIndicator()
 
@@ -325,7 +324,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
 
   @override
   void dispose() {
-    _editorController.dispose();
+    _editorController?.dispose();
     super.dispose();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/features/custom_video_picker/cubit/video_picker_cubit.dart';
 import 'package:ffmpeg_video_editor/features/custom_video_picker/widgets/video_thumbnail.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/video_editing_screen.dart';
@@ -36,7 +37,7 @@ class VideoPickerBottomSheet extends StatelessWidget {
                 ),
               _SelectedButton(
                 count: state.totalSelected,
-                onPressed: () {
+                onPressed: () async {
                   if (state.totalSelected == 0) {
                     const snackBar = SnackBar(
                       content: Text('Select video first!'),
@@ -45,11 +46,19 @@ class VideoPickerBottomSheet extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     return;
                   }
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => VideoEditingScreen(
-                      pickedVideos: state.pickedVideos,
-                    ),
-                  ));
+
+                  joinVideos(await getVideoFiles(state.pickedVideos))
+                      .then((file) {
+                    if (file != null) {
+                      if (!context.mounted) return;
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => VideoEditingScreen(
+                          filePath: file.path,
+                          pickedVideos: state.pickedVideos,
+                        ),
+                      ));
+                    }
+                  });
                   // navigate to next page
                 },
               )
