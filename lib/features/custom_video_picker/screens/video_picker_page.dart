@@ -1,3 +1,4 @@
+import 'package:ffmpeg_video_editor/core/di/dependency_injection.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/features/custom_video_picker/cubit/video_picker_cubit.dart';
 import 'package:ffmpeg_video_editor/features/custom_video_picker/widgets/video_picker_bottom_sheet.dart';
@@ -11,7 +12,7 @@ class VideoPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => VideoPickerCubit()..loadVideos(),
+      create: (context) => getIt<VideoPickerCubit>()..loadVideos(),
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(

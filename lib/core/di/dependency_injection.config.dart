@@ -11,6 +11,8 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
+import '../../features/custom_video_picker/cubit/video_picker_cubit.dart'
+    as _i754;
 import '../service/ffmpeg_service.dart' as _i334;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -24,6 +26,7 @@ extension GetItInjectableX on _i174.GetIt {
       environment,
       environmentFilter,
     );
+    gh.factory<_i754.VideoPickerCubit>(() => _i754.VideoPickerCubit());
     gh.lazySingleton<_i334.FFMPEGService>(() => _i334.FFMPEGService());
     return this;
   }

@@ -1,9 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
 import 'package:photo_manager/photo_manager.dart';
 part 'video_picker_cubit.freezed.dart';
 part 'video_picker_state.dart';
 
+@injectable
 class VideoPickerCubit extends Cubit<VideoPickerState> {
   VideoPickerCubit() : super(const VideoPickerState());
 

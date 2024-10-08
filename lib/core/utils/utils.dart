@@ -277,12 +277,11 @@ Future<File?> joinVideos(List<File> videoFiles) async {
     throw ArgumentError('No video files provided.');
   }
 
-  // Get a temporary directory for storing the output file.
-  final Directory tempDir = await getTemporaryDirectory();
-  final String outputPath = p.join(tempDir.path, 'output_video.mp4');
+  String outputPath = await getOutputFilePath();
 
   // Create a file list in the format required by ffmpeg.
-  final String inputFilePath = p.join(tempDir.path, 'input_list.txt');
+  final String inputFilePath =
+      p.join((await getTemporaryDirectory()).path, 'input_list.txt');
   final inputFile = File(inputFilePath);
 
   // Write the file paths to the input list.
