@@ -53,7 +53,7 @@ class VideoPickerBottomSheet extends StatelessWidget {
 
                   joinVideos(videoPaths).then((file) {
                     if (file != null) {
-                      // if (!context.mounted) return;
+                      if (!context.mounted) return;
                       log(file.path);
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => VideoEditingScreen(

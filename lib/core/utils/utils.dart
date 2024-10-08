@@ -292,11 +292,7 @@ Future<File?> joinVideos(List<File> videoFiles) async {
   // ffmpeg command to join the video files.
   final String ffmpegCommand =
       "-f concat -safe 0 -i ${inputFile.path} -c copy $outputPath";
-  // final String ffmpegCommand =
-  //     '-f concat -safe 0 -i ${inputFile.path} -vf "transpose=auto" -c:v libx264 -crf 23 -preset veryfast $outputPath';
-  // final ffmpegCommand =
-  //     '-f concat -safe 0 -i ${inputFile.path} -metadata:s:v rotate=0 -c:v libx264 -crf 23 -preset veryfast $outputPath';
-  // Execute the ffmpeg command.
+
   await FFmpegKit.execute(ffmpegCommand);
 
   // Check if the output file was created.

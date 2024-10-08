@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_video_editor/core/service/ffmpeg_service.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
+import 'package:ffmpeg_video_editor/features/video_editor/widgets/audio_picker.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/rotate_widget.dart';
@@ -33,6 +34,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   bool isProcessing = false;
   double progress = 0.0;
   String fps = '';
+  bool isAudioSelected = false;
+  String fileName = '';
 
   @override
   void initState() {
@@ -282,7 +285,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
               children: [
                 SizedBox(
                   height: MediaQuery.of(context).size.height / 2,
-                  width: MediaQuery.of(context).size.height / 1.1,
+                  width: MediaQuery.of(context).size.width / 1.5,
                   child: FittedBox(
                     child: SizedBox(
                       height: _getCorrectDimension(_editorController!.video),
@@ -301,7 +304,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                   alignment: Alignment.topRight,
                   child: Text(
                     "Size: $_videoSize\n fps: $fps",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
                 if (!isProcessing)
@@ -334,8 +338,11 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ElevatedButton(
-                onPressed: _pickAudio, child: const Text('Add audio')),
+            AudioPicker(
+              isAudioSelected: isAudioSelected,
+              onTap: _pickAudio,
+              fileName: fileName,
+            ),
             EditingOptions(
               onfilter: _applyFilter,
               onTrimAndSave: _trimAndSave,
@@ -367,6 +374,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       if (updatedPath != null) {
         setState(() {
           _currentVideoPath = updatedPath;
+          isAudioSelected = true;
+          fileName = result.files.first.name;
         });
       }
 
