@@ -186,10 +186,9 @@ Future<double> _getVideoDuration(String videoPath) async {
 }
 
 String formatTime(int timeInSeconds) {
-  final hours = (timeInSeconds ~/ 3600).toString().padLeft(2, '0');
   final minutes = ((timeInSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
   final seconds = (timeInSeconds % 60).toString().padLeft(2, '0');
-  return '$hours:$minutes:$seconds';
+  return '$minutes:$seconds';
 }
 
 Future<String?> getVideoFPS(String videoPath) async {

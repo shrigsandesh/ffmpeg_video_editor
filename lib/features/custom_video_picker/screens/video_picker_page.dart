@@ -13,6 +13,7 @@ class VideoPickerPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => VideoPickerCubit()..loadVideos(),
       child: Scaffold(
+        backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.black,
           centerTitle: true,
