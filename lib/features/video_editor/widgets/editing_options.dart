@@ -28,7 +28,7 @@ class EditingOptions extends StatelessWidget {
         EditingIcon(
             onEdit: onDeleteSection,
             editingIcon: Icons.delete,
-            label: "Delete selected section"),
+            label: "Delete"),
         EditingIcon(
             onEdit: onZoom, editingIcon: Icons.zoom_in, label: "Zoom(2X)"),
         // EditingIcon(
