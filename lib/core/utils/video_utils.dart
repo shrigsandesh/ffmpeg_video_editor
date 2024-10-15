@@ -185,10 +185,15 @@ Future<File?> joinVideos(List<File> videoFiles) async {
       videoFiles.map((file) => "file '${file.path}'").join('\n');
   await inputFile.writeAsString(inputString);
 
+  log(inputString.toString());
+
   // ffmpeg command to join the video files.
 
   final String ffmpegCommand =
       joinCommand(inputfilesPath: inputFile.path, outputVideoPath: outputPath);
+
+  log(joinCommand(inputfilesPath: inputFilePath, outputVideoPath: outputPath)
+      .toString());
   // final String ffmpegCommand =
   //     "-f concat -safe 0 -i ${inputFile.path} -c copy $outputPath";
 
