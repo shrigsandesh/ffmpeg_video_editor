@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class EditingIcon extends StatelessWidget {
   const EditingIcon(
       {super.key,
       required this.onEdit,
-      required this.editingIcon,
+      required this.assetPath,
       required this.label});
 
   final VoidCallback onEdit;
-  final IconData editingIcon;
+  final String assetPath;
   final String label;
 
   @override
@@ -18,9 +19,10 @@ class EditingIcon extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            editingIcon,
-            color: Colors.white,
+          SvgPicture.asset(
+            assetPath,
+            height: 24,
+            width: 24,
           ),
           SizedBox(
             width: 60,

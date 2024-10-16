@@ -20,19 +20,34 @@ class EditingOptions extends StatelessWidget {
     return Wrap(
       children: [
         EditingIcon(
-            onEdit: onfilter, editingIcon: Icons.tune, label: "B/W filter"),
-        EditingIcon(
-            onEdit: onTrimAndSave,
-            editingIcon: Icons.cut,
-            label: "Trim and Save"),
-        EditingIcon(
             onEdit: onDeleteSection,
-            editingIcon: Icons.delete,
-            label: "Delete"),
+            assetPath: 'assets/Scissors.svg',
+            label: "Cut"),
         EditingIcon(
-            onEdit: onZoom, editingIcon: Icons.zoom_in, label: "Zoom(2X)"),
-        // EditingIcon(
-        //     onEdit: onAddSubitles, editingIcon: Icons.add, label: "Subtitle"),
+            // onEdit: onTrimAndSave,
+            onEdit: () {},
+            assetPath: 'assets/MusicNotesSimple.svg',
+            label: "Sound"),
+        EditingIcon(
+            // onEdit: onDeleteSection,
+            onEdit: () {},
+            assetPath: 'assets/ClockCountdown.svg',
+            label: "Speed"),
+        EditingIcon(
+            // onEdit: onZoom,
+            onEdit: () {},
+            assetPath: 'assets/FlipHorizontal.svg',
+            label: "Mirror"),
+        EditingIcon(
+            // onEdit: onZoom,
+            onEdit: () {},
+            assetPath: 'assets/FadersHorizontal.svg',
+            label: "Adjust"),
+        EditingIcon(
+            // onEdit: onZoom,
+            onEdit: () {},
+            assetPath: 'assets/Spiral.svg',
+            label: "Blur"),
       ],
     );
   }

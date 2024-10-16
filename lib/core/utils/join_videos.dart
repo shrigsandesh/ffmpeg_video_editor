@@ -33,21 +33,20 @@ Future<bool> isLandScapeVideo(String videoPath) async {
 /// Rotates the video to portrait if it’s in landscape mode.
 Future<void> rotateToLandscape(
     String inputPath, void Function(String) output) async {
-  final isLandScape = await isLandScapeVideo(inputPath);
   String outputPath = await getOutputFilePath();
 
-  if (isLandScape) {
-    final command = '-i $inputPath -vf "transpose=1" $outputPath';
-    final session = await FFmpegKit.execute(command);
-    final returnCode = await session.getReturnCode();
+  final command =
+      "-i $inputPath -vf 'scale=1080:1920, pad=1080:1920:(ow-iw)/2:(oh-ih)/2' $outputPath";
+  // "-i $inputPath -vcodec h264 -s 1080x1920 -aspect 9:16 $outputPath";
+  final session = await FFmpegKit.execute(command);
+  final returnCode = await session.getReturnCode();
 
-    if (!ReturnCode.isSuccess(returnCode)) {
-      log('Failed to rotate video.');
-    }
-    if (ReturnCode.isSuccess(returnCode)) {
-      log('rotation successful');
-      output(outputPath);
-    }
+  if (!ReturnCode.isSuccess(returnCode)) {
+    log('Failed to rotate video.');
+  }
+  if (ReturnCode.isSuccess(returnCode)) {
+    log('rotation successful');
+    output(outputPath);
   }
 }
 
@@ -59,17 +58,12 @@ Future<String?> joinVideos(List<File> videoPaths) async {
   final outputPath = await getOutputFilePath();
   final List<String> landscapePaths = [];
   for (var video in videoPaths) {
-    final isLandScape = await isLandScapeVideo(video.path);
-    if (isLandScape) {
-      await rotateToLandscape(
-        video.path,
-        (filePath) {
-          landscapePaths.add(filePath);
-        },
-      );
-    } else {
-      landscapePaths.add(video.path);
-    }
+    await rotateToLandscape(
+      video.path,
+      (filePath) {
+        landscapePaths.add(filePath);
+      },
+    );
   }
 
   final String inputFilePath =

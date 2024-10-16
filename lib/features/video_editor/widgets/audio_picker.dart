@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AudioPicker extends StatelessWidget {
   const AudioPicker(
@@ -20,6 +21,7 @@ class AudioPicker extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 40,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
         width: double.infinity,
         decoration: BoxDecoration(
           border: Border.all(width: 1, color: Colors.white),
@@ -29,9 +31,10 @@ class AudioPicker extends StatelessWidget {
         child: isAudioSelected
             ? Row(
                 children: [
-                  const Icon(
-                    Icons.music_note,
-                    color: Colors.white,
+                  SvgPicture.asset(
+                    'assets/MusicNotesSimple.svg',
+                    height: 24,
+                    width: 24,
                   ),
                   Text(
                     fileName!,

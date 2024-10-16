@@ -29,7 +29,7 @@ class VideoEditingScreen extends StatefulWidget {
 class _VideoEditingScreenState extends State<VideoEditingScreen> {
   VideoEditorController? _editorController;
   late String _currentVideoPath;
-  String _videoSize = '';
+  // String _videoSize = '';
   bool isProcessing = false;
   double progress = 0.0;
   String fps = '';
@@ -53,7 +53,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     // Wait for the controller to initialize
     await _editorController?.initialize();
     setState(() {});
-    _getVideoSize();
+    // _getVideoSize();
     _editorController?.video.play();
     setState(() {});
   }
@@ -69,12 +69,12 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     await _initializeAndPlayVideo(path);
   }
 
-  Future<void> _getVideoSize() async {
-    final sizeInBytes = await File(_currentVideoPath).length();
-    setState(() {
-      _videoSize = '${(sizeInBytes / (1024 * 1024)).toStringAsFixed(2)} MB';
-    });
-  }
+  // Future<void> _getVideoSize() async {
+  //   final sizeInBytes = await File(_currentVideoPath).length();
+  //   setState(() {
+  //     _videoSize = '${(sizeInBytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+  //   });
+  // }
 
   Future<void> _runFFmpegCommand(String command,
       {required String outputPath, bool play = true}) async {
@@ -197,93 +197,70 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
   }
 
-  double _getCorrectDimension(VideoPlayerController controller,
-      {bool isWidth = false}) {
-    final size = controller.value.size;
-    return isWidth
-        ? (size.width > size.height ? size.width : size.height)
-        : (size.width > size.height ? size.height : size.width);
-  }
-
-// Helper method to check if the video is in landscape mode
-  bool _isLandscape(VideoPlayerController controller) {
-    final size = controller.value.size;
-    return size.width > size.height;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text("Edit Video", style: TextStyle(color: Colors.white)),
+        title:
+            const Text("Create Sizzle", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: GestureDetector(
+              onTap: () {},
+              child: const Text(
+                'Next',
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+          )
+        ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (_editorController?.video.value.isInitialized ?? false) ...[
             const SizedBox(height: 20),
             Stack(
-              alignment: Alignment.center,
               children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height / 2,
-                  width: MediaQuery.of(context).size.width / 1.5,
-                  child: FittedBox(
+                Center(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height / 2,
+                    width: MediaQuery.of(context).size.width / 1.5,
                     child: SizedBox(
-                      height: _getCorrectDimension(_editorController!.video),
-                      width: _getCorrectDimension(_editorController!.video,
-                          isWidth: true),
-                      child: Transform.rotate(
-                        angle: _isLandscape(_editorController!.video)
-                            ? 0
-                            : 90 * 3.1415926535 / 180,
+                      child: AspectRatio(
+                        aspectRatio: _editorController!.video.value.aspectRatio,
                         child: VideoPlayer(_editorController!.video),
                       ),
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Text(
-                    "Size: $_videoSize",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                if (!isProcessing)
-                  IconButton.outlined(
-                    onPressed: () {
-                      _editorController!.video.value.isPlaying
-                          ? _editorController!.video.pause()
-                          : _editorController!.video.play();
-                    },
-                    icon: Icon(_editorController!.video.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow),
-                    color: Colors.white,
-                  ),
                 if (isProcessing) ExportLoading(progress: progress),
               ],
             ),
-            TrimmerTimeline(controller: _editorController!),
           ] else
             const Center(child: CircularProgressIndicator()),
         ],
       ),
       bottomSheet: Container(
-        color: Colors.black,
+        color: const Color(0xff1A1D21),
         padding: const EdgeInsets.all(8.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_editorController?.initialized == true)
+              TrimmerTimeline(controller: _editorController!),
             AudioPicker(
               isAudioSelected: isAudioSelected,
               onTap: _pickAudio,
               fileName: fileName,
               onRemove: _removeAudio,
             ),
+            const SizedBox(height: 20),
             EditingOptions(
               onfilter: _applyFilter,
               onTrimAndSave: _trimAndSave,

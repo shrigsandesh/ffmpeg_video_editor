@@ -12,7 +12,6 @@ class TrimmerTimeline extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(height: 20),
         AnimatedBuilder(
           animation: Listenable.merge([
             controller,
@@ -23,28 +22,42 @@ class TrimmerTimeline extends StatelessWidget {
             final double pos = controller.trimPosition * duration;
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(children: [
-                Text(
-                  formatter(Duration(seconds: pos.isNaN ? 0 : pos.toInt())),
-                  style: textStyle,
-                ),
-                const Expanded(child: SizedBox()),
-                AnimatedOpacity(
-                  opacity: controller.isTrimming ? 1 : 0,
-                  duration: kThemeAnimationDuration,
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
                     Text(
-                      formatter(controller.startTrim),
+                      "${formatter(Duration(seconds: pos.isNaN ? 0 : pos.toInt()))} / ${formatter(Duration(seconds: duration))}",
                       style: textStyle,
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      formatter(controller.endTrim),
-                      style: textStyle,
+                    IconButton(
+                      onPressed: () {
+                        controller.video.value.isPlaying
+                            ? controller.video.pause()
+                            : controller.video.play();
+                      },
+                      icon: Icon(
+                        controller.video.value.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
+                        color: Colors.white,
+                      ),
+                    ),
+                    AnimatedOpacity(
+                      opacity: controller.isTrimming ? 1 : 0,
+                      duration: kThemeAnimationDuration,
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(
+                          formatter(controller.startTrim),
+                          style: textStyle,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          formatter(controller.endTrim),
+                          style: textStyle,
+                        ),
+                      ]),
                     ),
                   ]),
-                ),
-              ]),
             );
           },
         ),
@@ -52,6 +65,7 @@ class TrimmerTimeline extends StatelessWidget {
           height: height,
           width: MediaQuery.of(context).size.width,
           margin: EdgeInsets.symmetric(vertical: height / 4),
+          color: const Color(0xff1A1D21),
           child: Stack(
             children: [
               Positioned.fill(
