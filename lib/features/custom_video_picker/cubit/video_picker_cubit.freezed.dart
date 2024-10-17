@@ -16,8 +16,10 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$VideoPickerState {
+  List<AssetEntity> get allFiles => throw _privateConstructorUsedError;
   List<AssetEntity> get videoFiles => throw _privateConstructorUsedError;
   List<AssetEntity> get pickedVideos => throw _privateConstructorUsedError;
+  List<AssetEntity> get imageFiles => throw _privateConstructorUsedError;
 
   /// Create a copy of VideoPickerState
   /// with the given fields replaced by the non-null parameter values.
@@ -32,7 +34,11 @@ abstract class $VideoPickerStateCopyWith<$Res> {
           VideoPickerState value, $Res Function(VideoPickerState) then) =
       _$VideoPickerStateCopyWithImpl<$Res, VideoPickerState>;
   @useResult
-  $Res call({List<AssetEntity> videoFiles, List<AssetEntity> pickedVideos});
+  $Res call(
+      {List<AssetEntity> allFiles,
+      List<AssetEntity> videoFiles,
+      List<AssetEntity> pickedVideos,
+      List<AssetEntity> imageFiles});
 }
 
 /// @nodoc
@@ -50,10 +56,16 @@ class _$VideoPickerStateCopyWithImpl<$Res, $Val extends VideoPickerState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? allFiles = null,
     Object? videoFiles = null,
     Object? pickedVideos = null,
+    Object? imageFiles = null,
   }) {
     return _then(_value.copyWith(
+      allFiles: null == allFiles
+          ? _value.allFiles
+          : allFiles // ignore: cast_nullable_to_non_nullable
+              as List<AssetEntity>,
       videoFiles: null == videoFiles
           ? _value.videoFiles
           : videoFiles // ignore: cast_nullable_to_non_nullable
@@ -61,6 +73,10 @@ class _$VideoPickerStateCopyWithImpl<$Res, $Val extends VideoPickerState>
       pickedVideos: null == pickedVideos
           ? _value.pickedVideos
           : pickedVideos // ignore: cast_nullable_to_non_nullable
+              as List<AssetEntity>,
+      imageFiles: null == imageFiles
+          ? _value.imageFiles
+          : imageFiles // ignore: cast_nullable_to_non_nullable
               as List<AssetEntity>,
     ) as $Val);
   }
@@ -74,7 +90,11 @@ abstract class _$$VideoPickerStateImplCopyWith<$Res>
       __$$VideoPickerStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<AssetEntity> videoFiles, List<AssetEntity> pickedVideos});
+  $Res call(
+      {List<AssetEntity> allFiles,
+      List<AssetEntity> videoFiles,
+      List<AssetEntity> pickedVideos,
+      List<AssetEntity> imageFiles});
 }
 
 /// @nodoc
@@ -90,10 +110,16 @@ class __$$VideoPickerStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? allFiles = null,
     Object? videoFiles = null,
     Object? pickedVideos = null,
+    Object? imageFiles = null,
   }) {
     return _then(_$VideoPickerStateImpl(
+      allFiles: null == allFiles
+          ? _value._allFiles
+          : allFiles // ignore: cast_nullable_to_non_nullable
+              as List<AssetEntity>,
       videoFiles: null == videoFiles
           ? _value._videoFiles
           : videoFiles // ignore: cast_nullable_to_non_nullable
@@ -101,6 +127,10 @@ class __$$VideoPickerStateImplCopyWithImpl<$Res>
       pickedVideos: null == pickedVideos
           ? _value._pickedVideos
           : pickedVideos // ignore: cast_nullable_to_non_nullable
+              as List<AssetEntity>,
+      imageFiles: null == imageFiles
+          ? _value._imageFiles
+          : imageFiles // ignore: cast_nullable_to_non_nullable
               as List<AssetEntity>,
     ));
   }
@@ -110,11 +140,24 @@ class __$$VideoPickerStateImplCopyWithImpl<$Res>
 
 class _$VideoPickerStateImpl extends _VideoPickerState {
   const _$VideoPickerStateImpl(
-      {final List<AssetEntity> videoFiles = const [],
-      final List<AssetEntity> pickedVideos = const []})
-      : _videoFiles = videoFiles,
+      {final List<AssetEntity> allFiles = const [],
+      final List<AssetEntity> videoFiles = const [],
+      final List<AssetEntity> pickedVideos = const [],
+      final List<AssetEntity> imageFiles = const []})
+      : _allFiles = allFiles,
+        _videoFiles = videoFiles,
         _pickedVideos = pickedVideos,
+        _imageFiles = imageFiles,
         super._();
+
+  final List<AssetEntity> _allFiles;
+  @override
+  @JsonKey()
+  List<AssetEntity> get allFiles {
+    if (_allFiles is EqualUnmodifiableListView) return _allFiles;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_allFiles);
+  }
 
   final List<AssetEntity> _videoFiles;
   @override
@@ -134,9 +177,18 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
     return EqualUnmodifiableListView(_pickedVideos);
   }
 
+  final List<AssetEntity> _imageFiles;
+  @override
+  @JsonKey()
+  List<AssetEntity> get imageFiles {
+    if (_imageFiles is EqualUnmodifiableListView) return _imageFiles;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_imageFiles);
+  }
+
   @override
   String toString() {
-    return 'VideoPickerState(videoFiles: $videoFiles, pickedVideos: $pickedVideos)';
+    return 'VideoPickerState(allFiles: $allFiles, videoFiles: $videoFiles, pickedVideos: $pickedVideos, imageFiles: $imageFiles)';
   }
 
   @override
@@ -144,17 +196,22 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$VideoPickerStateImpl &&
+            const DeepCollectionEquality().equals(other._allFiles, _allFiles) &&
             const DeepCollectionEquality()
                 .equals(other._videoFiles, _videoFiles) &&
             const DeepCollectionEquality()
-                .equals(other._pickedVideos, _pickedVideos));
+                .equals(other._pickedVideos, _pickedVideos) &&
+            const DeepCollectionEquality()
+                .equals(other._imageFiles, _imageFiles));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      const DeepCollectionEquality().hash(_allFiles),
       const DeepCollectionEquality().hash(_videoFiles),
-      const DeepCollectionEquality().hash(_pickedVideos));
+      const DeepCollectionEquality().hash(_pickedVideos),
+      const DeepCollectionEquality().hash(_imageFiles));
 
   /// Create a copy of VideoPickerState
   /// with the given fields replaced by the non-null parameter values.
@@ -168,14 +225,20 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
 
 abstract class _VideoPickerState extends VideoPickerState {
   const factory _VideoPickerState(
-      {final List<AssetEntity> videoFiles,
-      final List<AssetEntity> pickedVideos}) = _$VideoPickerStateImpl;
+      {final List<AssetEntity> allFiles,
+      final List<AssetEntity> videoFiles,
+      final List<AssetEntity> pickedVideos,
+      final List<AssetEntity> imageFiles}) = _$VideoPickerStateImpl;
   const _VideoPickerState._() : super._();
 
+  @override
+  List<AssetEntity> get allFiles;
   @override
   List<AssetEntity> get videoFiles;
   @override
   List<AssetEntity> get pickedVideos;
+  @override
+  List<AssetEntity> get imageFiles;
 
   /// Create a copy of VideoPickerState
   /// with the given fields replaced by the non-null parameter values.

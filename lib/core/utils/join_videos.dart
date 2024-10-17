@@ -20,14 +20,15 @@ Future<bool> isLandScapeVideo(String videoPath) async {
     return false;
   }
 
-  final rotationTag =
-      mediaInfo.getStreams().first.getAllProperties()?['side_data_list'];
+  int height = mediaInfo.getStreams().first.getHeight() ?? 0;
+  int width = mediaInfo.getStreams().first.getWidth() ?? 0;
 
-  if (rotationTag == null) {
-    return true;
-  } else {
+  log("$videoPath: $height x $width");
+
+  if (height == 0 || width == 0) {
     return false;
   }
+  return width > height;
 }
 
 /// Rotates the video to portrait if it’s in landscape mode.
@@ -36,7 +37,14 @@ Future<void> rotateToLandscape(
   String outputPath = await getOutputFilePath();
 
   final command =
-      "-i $inputPath -vf 'scale=1080:1920, pad=1080:1920:(ow-iw)/2:(oh-ih)/2' $outputPath";
+      '-i $inputPath -vf "crop=ih*(9/16):ih" -crf 21 -c:a copy $outputPath';
+
+  // "-i $inputPath -vf \"scale=iw*min(1080/iw\\,1920/ih):"
+  //     "ih*min(1080/iw\\,1920/ih),"
+  //     "pad=1080:1920:(1080-iw*min(1080/iw\\,1920/ih))/2:"
+  //     "(1920-ih*min(1080/iw\\,1920/ih))/2\" "
+  //     "-c:a copy $outputPath";
+  // "-i $inputPath -vf 'scale=1080:1920, pad=1080:1920:(ow-iw)/2:(oh-ih)/2' $outputPath";
   // "-i $inputPath -vcodec h264 -s 1080x1920 -aspect 9:16 $outputPath";
   final session = await FFmpegKit.execute(command);
   final returnCode = await session.getReturnCode();
@@ -58,12 +66,17 @@ Future<String?> joinVideos(List<File> videoPaths) async {
   final outputPath = await getOutputFilePath();
   final List<String> landscapePaths = [];
   for (var video in videoPaths) {
-    await rotateToLandscape(
-      video.path,
-      (filePath) {
-        landscapePaths.add(filePath);
-      },
-    );
+    bool isLandscape = await isLandScapeVideo(video.path);
+    if (isLandscape) {
+      await rotateToLandscape(
+        video.path,
+        (filePath) {
+          landscapePaths.add(filePath);
+        },
+      );
+    } else {
+      landscapePaths.add(video.path);
+    }
   }
 
   final String inputFilePath =

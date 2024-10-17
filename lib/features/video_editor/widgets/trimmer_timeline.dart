@@ -26,7 +26,7 @@ class TrimmerTimeline extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "${formatter(Duration(seconds: pos.isNaN ? 0 : pos.toInt()))} / ${formatter(Duration(seconds: duration))}",
+                      "${formatter(Duration(seconds: pos.isNaN ? 0 : pos.toInt()))} / ${formatter(Duration(seconds: duration.isNaN ? 0 : duration))}",
                       style: textStyle,
                     ),
                     IconButton(
