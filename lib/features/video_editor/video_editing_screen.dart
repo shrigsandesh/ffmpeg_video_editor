@@ -267,6 +267,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
               onDeleteSection: _deleteSection,
               onZoom: _zoomIntoVideo,
               onAddSubitles: () {},
+              onFlip: _flipVideo,
             ),
           ],
         ),
@@ -305,6 +306,16 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     setState(() {
       _currentVideoPath = updatedPath;
       isAudioSelected = false;
+    });
+
+    _replayVideo(_currentVideoPath);
+  }
+
+  void _flipVideo() async {
+    String updatedPath = await mirrorHorizontally(_currentVideoPath);
+
+    setState(() {
+      _currentVideoPath = updatedPath;
     });
 
     _replayVideo(_currentVideoPath);

@@ -270,3 +270,21 @@ Future<String> removeAudioFromVideo(String videoPath) async {
   });
   return outputVideoPath;
 }
+
+Future<String> mirrorHorizontally(String videoPath) async {
+  String outputVideoPath = await getOutputFilePath();
+
+  // FFmpeg command to trim audio and combine it with the video
+  String ffmpegCommand = '-i $videoPath -vf hflip -c:a copy $outputVideoPath';
+
+  await FFmpegKit.execute(ffmpegCommand).then((session) async {
+    final returnCode = await session.getReturnCode();
+    if (ReturnCode.isSuccess(returnCode)) {
+      log('Video flipped sucessfully.');
+    } else {
+      log('fail to flip video.');
+      return null;
+    }
+  });
+  return outputVideoPath;
+}

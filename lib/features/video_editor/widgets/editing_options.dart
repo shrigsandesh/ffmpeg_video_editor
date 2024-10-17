@@ -8,12 +8,14 @@ class EditingOptions extends StatelessWidget {
       required this.onTrimAndSave,
       required this.onDeleteSection,
       required this.onZoom,
-      required this.onAddSubitles});
+      required this.onAddSubitles,
+      required this.onFlip});
   final VoidCallback onfilter;
   final VoidCallback onTrimAndSave;
   final VoidCallback onDeleteSection;
   final VoidCallback onZoom;
   final VoidCallback onAddSubitles;
+  final VoidCallback onFlip;
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +36,7 @@ class EditingOptions extends StatelessWidget {
             assetPath: 'assets/ClockCountdown.svg',
             label: "Speed"),
         EditingIcon(
-            // onEdit: onZoom,
-            onEdit: () {},
+            onEdit: onFlip,
             assetPath: 'assets/FlipHorizontal.svg',
             label: "Mirror"),
         EditingIcon(

@@ -37,13 +37,13 @@ Future<void> rotateToLandscape(
   String outputPath = await getOutputFilePath();
 
   final command =
-      '-i $inputPath -vf "crop=ih*(9/16):ih" -crf 21 -c:a copy $outputPath';
+      // '-i $inputPath -vf "crop=ih*(9/16):ih" -crf 21 -c:a copy $outputPath';
 
-  // "-i $inputPath -vf \"scale=iw*min(1080/iw\\,1920/ih):"
-  //     "ih*min(1080/iw\\,1920/ih),"
-  //     "pad=1080:1920:(1080-iw*min(1080/iw\\,1920/ih))/2:"
-  //     "(1920-ih*min(1080/iw\\,1920/ih))/2\" "
-  //     "-c:a copy $outputPath";
+      "-i $inputPath -vf \"scale=iw*min(1080/iw\\,1920/ih):"
+      "ih*min(1080/iw\\,1920/ih),"
+      "pad=1080:1920:(1080-iw*min(1080/iw\\,1920/ih))/2:"
+      "(1920-ih*min(1080/iw\\,1920/ih))/2\" "
+      "-c:a copy $outputPath";
   // "-i $inputPath -vf 'scale=1080:1920, pad=1080:1920:(ow-iw)/2:(oh-ih)/2' $outputPath";
   // "-i $inputPath -vcodec h264 -s 1080x1920 -aspect 9:16 $outputPath";
   final session = await FFmpegKit.execute(command);
