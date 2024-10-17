@@ -7,6 +7,7 @@ import 'package:ffmpeg_video_editor/core/utils/video_utils.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/audio_picker.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading.dart';
+import 'package:ffmpeg_video_editor/features/video_editor/widgets/popuup_menu.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   String fps = '';
   bool isAudioSelected = false;
   String fileName = '';
+  final GlobalKey _buttonKey = GlobalKey();
 
   @override
   void initState() {
@@ -262,12 +264,14 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
             ),
             const SizedBox(height: 20),
             EditingOptions(
+              key: _buttonKey,
               onfilter: _applyFilter,
               onTrimAndSave: _trimAndSave,
               onDeleteSection: _deleteSection,
               onZoom: _zoomIntoVideo,
               onAddSubitles: () {},
               onFlip: _flipVideo,
+              onSpeedChange: _onSpeedChange,
             ),
           ],
         ),
@@ -319,5 +323,21 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     });
 
     _replayVideo(_currentVideoPath);
+  }
+
+  void _onSpeedChange() {
+    showPopupMenu(
+      context,
+      _buttonKey,
+      (speed) async {
+        double videoSpeed = double.tryParse(speed) ?? 1;
+        if (videoSpeed == 1) return;
+        String path = await changeSpeed(_currentVideoPath, videoSpeed);
+        setState(() {
+          _currentVideoPath = path;
+        });
+        _replayVideo(path);
+      },
+    );
   }
 }

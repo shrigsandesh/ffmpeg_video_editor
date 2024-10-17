@@ -10,6 +10,8 @@ import 'package:path_provider/path_provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
+import 'package:ffmpeg_video_editor/core/service/ffmpeg_service2.dart'
+    as service;
 
 Future<String> trimVideo(
     String inputPath, double startTrim, double endTrim) async {
@@ -124,7 +126,9 @@ Future<String> removeSectionFromVideo({
       log('Error joining video segments: $logs');
     }
   });
-  await deleteTemporaryFile(concatFile.path);
+  if (concatFile.existsSync()) {
+    await deleteTemporaryFile(concatFile.path);
+  }
 
   // Check if the final output video is created
   if (File(outputPath).existsSync()) {
@@ -284,8 +288,24 @@ Future<String> mirrorHorizontally(String videoPath) async {
       log('Video flipped sucessfully.');
     } else {
       log('fail to flip video.');
-      return null;
     }
   });
+  return outputVideoPath;
+}
+
+Future<String> changeSpeed(String videoPath, double speed) async {
+  String outputVideoPath = await getOutputFilePath();
+
+  String ffmpegCommand =
+      '-i $videoPath -filter_complex "[0:v]setpts=1/$speed*PTS[v];[0:a]atempo=$speed[a]" -map "[v]" -map "[a]" $outputVideoPath';
+
+  service.FFmpegService fFmpegService = service.FFmpegService();
+
+  await fFmpegService.runFFmpegCommand(ffmpegCommand, onSuccess: (output) {
+    log("successfully changed the speed of the video");
+  }, onFailure: (error) {
+    log('error changing the speed of the video');
+  });
+
   return outputVideoPath;
 }

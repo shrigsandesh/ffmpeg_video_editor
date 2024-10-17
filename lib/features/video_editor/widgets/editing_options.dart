@@ -9,13 +9,15 @@ class EditingOptions extends StatelessWidget {
       required this.onDeleteSection,
       required this.onZoom,
       required this.onAddSubitles,
-      required this.onFlip});
+      required this.onFlip,
+      required this.onSpeedChange});
   final VoidCallback onfilter;
   final VoidCallback onTrimAndSave;
   final VoidCallback onDeleteSection;
   final VoidCallback onZoom;
   final VoidCallback onAddSubitles;
   final VoidCallback onFlip;
+  final VoidCallback onSpeedChange;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +33,7 @@ class EditingOptions extends StatelessWidget {
             assetPath: 'assets/MusicNotesSimple.svg',
             label: "Sound"),
         EditingIcon(
-            // onEdit: onDeleteSection,
-            onEdit: () {},
+            onEdit: onSpeedChange,
             assetPath: 'assets/ClockCountdown.svg',
             label: "Speed"),
         EditingIcon(

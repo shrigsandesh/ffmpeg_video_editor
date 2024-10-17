@@ -91,12 +91,14 @@ Future<String?> joinVideos(List<File> videoPaths) async {
   // Step 3: Use FFmpeg to join the videos
   final command =
       "-f concat -safe 0 -i '${inputFile.path}' -c copy $outputPath";
-  fFmpegService.runFFmpegCommand(command, onSuccess: (msg) {
+  await fFmpegService.runFFmpegCommand(command, onSuccess: (msg) {
     log(msg);
     return outputPath;
   }, onFailure: (failure) {
     return null;
   });
-  await deleteTemporaryFile(inputFilePath);
+  if (inputFile.existsSync()) {
+    await deleteTemporaryFile(inputFile.path);
+  }
   return outputPath;
 }
