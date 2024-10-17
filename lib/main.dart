@@ -1,5 +1,5 @@
 import 'package:ffmpeg_video_editor/core/di/dependency_injection.dart';
-import 'package:ffmpeg_video_editor/features/custom_video_picker/screens/video_picker_page.dart';
+import 'package:ffmpeg_video_editor/features/custom_video_picker/video_picker_page.dart';
 import 'package:flutter/material.dart';
 
 import 'package:photo_manager/photo_manager.dart';
@@ -19,7 +19,8 @@ class FFmpegVideoEditorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: HomePage());
+    return const MaterialApp(
+        debugShowCheckedModeBanner: false, home: HomePage());
   }
 }
 

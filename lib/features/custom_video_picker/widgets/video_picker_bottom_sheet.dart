@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:ffmpeg_video_editor/core/utils/join_videos.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
+// import 'package:ffmpeg_video_editor/core/utils/video_utils.dart';
 import 'package:ffmpeg_video_editor/features/custom_video_picker/cubit/video_picker_cubit.dart';
 import 'package:ffmpeg_video_editor/features/custom_video_picker/widgets/video_thumbnail.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/video_editing_screen.dart';
@@ -49,15 +51,13 @@ class VideoPickerBottomSheet extends StatelessWidget {
                     return;
                   }
                   var videoPaths = await getVideoFiles(state.pickedVideos);
-                  log(videoPaths.toString());
 
                   joinVideos(videoPaths).then((file) {
                     if (file != null) {
                       if (!context.mounted) return;
-                      log(file.path);
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => VideoEditingScreen(
-                          filePath: file.path,
+                          filePath: file,
                           pickedVideos: state.pickedVideos,
                         ),
                       ));

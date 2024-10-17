@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<bool> storagePermission() async {
-  final DeviceInfoPlugin info =
-      DeviceInfoPlugin(); // import 'package:device_info_plus/device_info_plus.dart';
+  final DeviceInfoPlugin info = DeviceInfoPlugin();
   final AndroidDeviceInfo androidInfo = await info.androidInfo;
   debugPrint('releaseVersion : ${androidInfo.version.release}');
   final int androidVersion = int.parse(androidInfo.version.release);

@@ -56,6 +56,13 @@ class FFMPEGService {
     );
   }
 
+  Future<void> runSyncFFmpegCommand(String command) async {
+    debugPrint('FFmpeg start process with command = $command');
+    await FFmpegKit.execute(
+      command,
+    );
+  }
+
   Future<double> getVideoDuration(String videoPath) async {
     final info = await FFprobeKit.getMediaInformation(videoPath);
     final output = info.getMediaInformation();

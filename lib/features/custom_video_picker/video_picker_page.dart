@@ -12,7 +12,7 @@ class VideoPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<VideoPickerCubit>()..loadVideos(),
+      create: (context) => get<VideoPickerCubit>()..loadVideos(),
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(

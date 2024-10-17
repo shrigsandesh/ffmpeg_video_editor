@@ -20,8 +20,15 @@ class VideoPickerCubit extends Cubit<VideoPickerState> {
     // Filter videos
     List<AssetEntity> videos =
         assets.where((asset) => asset.type == AssetType.video).toList();
+    // Filter videos
+    List<AssetEntity> images =
+        assets.where((asset) => asset.type == AssetType.image).toList();
 
-    emit(state.copyWith(videoFiles: videos));
+    emit(state.copyWith(
+      allFiles: assets,
+      videoFiles: videos,
+      imageFiles: images,
+    ));
   }
 
   void addPickedVideo(AssetEntity video) {
