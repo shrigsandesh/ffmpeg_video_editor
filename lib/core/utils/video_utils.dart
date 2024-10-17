@@ -124,6 +124,7 @@ Future<String> removeSectionFromVideo({
       log('Error joining video segments: $logs');
     }
   });
+  await deleteTemporaryFile(concatFile.path);
 
   // Check if the final output video is created
   if (File(outputPath).existsSync()) {

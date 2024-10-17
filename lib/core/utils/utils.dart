@@ -40,3 +40,9 @@ Future<List<File>> getVideoFiles(List<AssetEntity> pickedVideos) async {
   }
   return files;
 }
+
+Future<void> deleteTemporaryFile(String filePath) async {
+  await File(filePath).delete();
+  // Delete the entire directory
+  await Directory(filePath).delete(recursive: true);
+}

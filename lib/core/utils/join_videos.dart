@@ -97,5 +97,6 @@ Future<String?> joinVideos(List<File> videoPaths) async {
   }, onFailure: (failure) {
     return null;
   });
+  await deleteTemporaryFile(inputFilePath);
   return outputPath;
 }
