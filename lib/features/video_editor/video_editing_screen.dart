@@ -53,11 +53,13 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     );
 
     // Wait for the controller to initialize
-    await _editorController?.initialize();
-    setState(() {});
-    // _getVideoSize();
-    _editorController?.video.play();
-    setState(() {});
+    await _editorController?.initialize().then((_) {
+      // Force the aspect ratio and orientation based on the metadata
+      setState(() {
+        _editorController?.video.setVolume(1.0);
+        _editorController?.video.play();
+      });
+    });
   }
 
   Future<void> _loadVideo() async {

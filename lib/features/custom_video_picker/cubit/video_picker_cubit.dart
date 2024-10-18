@@ -14,8 +14,9 @@ class VideoPickerCubit extends Cubit<VideoPickerState> {
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList();
 
     // Get assets from the first album
+    int assetCount = await albums[0].assetCountAsync;
     List<AssetEntity> assets =
-        await albums[0].getAssetListRange(start: 0, end: 1000);
+        await albums[0].getAssetListRange(start: 0, end: assetCount);
 
     // Filter videos
     List<AssetEntity> videos =

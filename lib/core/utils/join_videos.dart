@@ -2,34 +2,12 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:ffmpeg_video_editor/core/service/ffmpeg_service2.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-
-/// Detects the video orientation using FFmpeg metadata.
-Future<bool> isLandScapeVideo(String videoPath) async {
-  log(videoPath);
-  final session = await FFprobeKit.getMediaInformation(videoPath);
-  final mediaInfo = session.getMediaInformation();
-
-  if (mediaInfo == null) {
-    log('Failed to retrieve media information.');
-    return false;
-  }
-
-  int height = mediaInfo.getStreams().first.getHeight() ?? 0;
-  int width = mediaInfo.getStreams().first.getWidth() ?? 0;
-
-  log("$videoPath: $height x $width");
-
-  if (height == 0 || width == 0) {
-    return false;
-  }
-  return width > height;
-}
+import 'package:photo_manager/photo_manager.dart';
 
 /// Rotates the video to portrait if it’s in landscape mode.
 Future<void> rotateToLandscape(
@@ -59,26 +37,28 @@ Future<void> rotateToLandscape(
 }
 
 /// Joins multiple videos into one in landscape orientation.
-Future<String?> joinVideos(List<File> videoPaths) async {
+Future<String?> joinVideos(List<AssetEntity> videoPaths) async {
   FFmpegService fFmpegService = FFmpegService();
 
   // Step 1: Rotate all videos to landscape and store new paths
   final outputPath = await getOutputFilePath();
   final List<String> landscapePaths = [];
   for (var video in videoPaths) {
-    bool isLandscape = await isLandScapeVideo(video.path);
+    var file = await video.file;
+
+    bool isLandscape = video.orientation == 0;
     if (isLandscape) {
       await rotateToLandscape(
-        video.path,
+        file!.path,
         (filePath) {
           landscapePaths.add(filePath);
         },
       );
     } else {
-      landscapePaths.add(video.path);
+      landscapePaths.add(file!.path);
     }
   }
-
+  log("paths: ${landscapePaths.toList()}");
   final String inputFilePath =
       p.join((await getTemporaryDirectory()).path, 'input_list.txt');
   final inputFile = File(inputFilePath);

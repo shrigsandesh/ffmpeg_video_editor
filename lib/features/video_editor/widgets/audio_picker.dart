@@ -36,6 +36,9 @@ class AudioPicker extends StatelessWidget {
                     height: 24,
                     width: 24,
                   ),
+                  const SizedBox(
+                    width: 10,
+                  ),
                   Text(
                     fileName!,
                     style: const TextStyle(color: Colors.white),
