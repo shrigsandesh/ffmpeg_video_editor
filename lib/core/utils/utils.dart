@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -11,13 +12,29 @@ String formatTime(int timeInSeconds) {
 }
 
 Future<String> getOutputFilePath() async {
-  final tempDir = await getTemporaryDirectory();
-  final uniqueId = DateTime.now().millisecondsSinceEpoch;
+  try {
+    final tempDir = await getTemporaryDirectory();
+    final uniqueId = DateTime.now().millisecondsSinceEpoch;
+    final directoryPath = "${tempDir.path}/videos/$uniqueId/";
 
-  final directory = Directory("${tempDir.path}/videos/$uniqueId/")
-    ..create(recursive: true);
-  final outputPath = "${directory.path}output.mp4";
-  return outputPath;
+    // Delete existing directory if it exists
+    await _deleteIfExists(directoryPath);
+
+    // Create the new directory
+    final directory = await Directory(directoryPath).create(recursive: true);
+
+    return "${directory.path}output.mp4";
+  } catch (e) {
+    log("Error creating temporary path for video: $e");
+    return ''; // Return empty string in case of failure
+  }
+}
+
+Future<void> _deleteIfExists(String path) async {
+  final dir = Directory(path);
+  if (await dir.exists()) {
+    await dir.delete(recursive: true);
+  }
 }
 
 Future<File> loadSrtFromAssets(String assetPath) async {

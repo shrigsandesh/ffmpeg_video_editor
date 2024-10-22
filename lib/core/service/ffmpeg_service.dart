@@ -1,11 +1,12 @@
 import 'dart:developer';
 
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
-import 'package:ffmpeg_kit_flutter/statistics.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_session.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/log.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 
@@ -21,6 +22,7 @@ class FFMPEGService {
     required void Function(ReturnCode? returnCode) onCompleted,
     void Function(Object, StackTrace)? onError,
     void Function(Statistics)? onProgress,
+    bool showDetailslogs = false,
   }) {
     debugPrint('FFmpeg start process with command = $command');
 
@@ -30,17 +32,17 @@ class FFMPEGService {
         final state =
             FFmpegKitConfig.sessionStateToString(await session.getState());
         final code = await session.getReturnCode();
-        final output = await session.getOutput(); // Full log output
+
+        /// Handles the logs and errors for the FFmpeg session.
+        if (showDetailslogs) {
+          // Retrieve logs and statistics for debugging.
+          await handleLogs(session);
+          await handleStatistics(session);
+        }
 
         if (ReturnCode.isSuccess(code)) {
           onCompleted(code);
         } else {
-          // There was an error
-          final errorLogs =
-              await session.getFailStackTrace(); // Capture failure stack trace
-          log("FFmpeg command failed with return code: $code");
-          log("Error logs: $errorLogs");
-          log("Full output: $output");
           if (onError != null) {
             onError(
               Exception(
@@ -71,6 +73,21 @@ class FFMPEGService {
       return 0.0;
     } else {
       return double.parse(durStr);
+    }
+  }
+
+  Future<void> handleLogs(FFmpegSession session) async {
+    List<Log> logs = await session.getLogs();
+    for (var l in logs) {
+      log('FFmpeg Log: ${l.getLevel()} - ${l.getMessage()}');
+    }
+  }
+
+  /// Fetch and print statistics from the FFmpeg session.
+  Future<void> handleStatistics(FFmpegSession session) async {
+    List<Statistics>? stats = await session.getStatistics();
+    for (var stat in stats) {
+      log('FFmpeg Stats - Time: ${stat.getTime()}, Bitrate: ${stat.getBitrate()}, Size: ${stat.getSize()}');
     }
   }
 }

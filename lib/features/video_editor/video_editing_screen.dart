@@ -56,7 +56,6 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     await _editorController?.initialize().then((_) {
       // Force the aspect ratio and orientation based on the metadata
       setState(() {
-        _editorController?.video.setVolume(1.0);
         _editorController?.video.play();
       });
     });
@@ -72,13 +71,6 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     _editorController?.dispose();
     await _initializeAndPlayVideo(path);
   }
-
-  // Future<void> _getVideoSize() async {
-  //   final sizeInBytes = await File(_currentVideoPath).length();
-  //   setState(() {
-  //     _videoSize = '${(sizeInBytes / (1024 * 1024)).toStringAsFixed(2)} MB';
-  //   });
-  // }
 
   Future<void> _runFFmpegCommand(String command,
       {required String outputPath, bool play = true}) async {
@@ -112,6 +104,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
           _replayVideo(outputPath);
         }
       },
+      showDetailslogs: true,
     );
   }
 
@@ -201,10 +194,16 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     await _runFFmpegCommand(ffmpegCommand, outputPath: outputPath);
   }
 
+  void isProcesing(bool isVideoProcessing) {
+    setState(() {
+      isProcessing = isVideoProcessing;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xff1A1D21),
       appBar: AppBar(
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -227,23 +226,24 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const SizedBox(height: 20),
           if (_editorController?.video.value.isInitialized ?? false) ...[
-            const SizedBox(height: 20),
             Stack(
               children: [
                 Center(
                   child: SizedBox(
                     height: MediaQuery.of(context).size.height / 2,
                     width: MediaQuery.of(context).size.width / 1.5,
-                    child: SizedBox(
-                      child: AspectRatio(
-                        aspectRatio: _editorController!.video.value.aspectRatio,
-                        child: VideoPlayer(_editorController!.video),
-                      ),
+                    child: AspectRatio(
+                      aspectRatio: _editorController!.video.value.aspectRatio,
+                      child: VideoPlayer(_editorController!.video),
                     ),
                   ),
                 ),
-                if (isProcessing) ExportLoading(progress: progress),
+                if (isProcessing)
+                  Align(
+                      alignment: Alignment.center,
+                      child: ExportLoading(progress: progress)),
               ],
             ),
           ] else
@@ -274,6 +274,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
               onAddSubitles: () {},
               onFlip: _flipVideo,
               onSpeedChange: _onSpeedChange,
+              onAdjust: _onAdjust,
             ),
           ],
         ),
@@ -292,39 +293,30 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
         await FilePicker.platform.pickFiles(type: FileType.audio);
     if (result != null) {
       File file = File(result.files.single.path!);
-      String? updatedPath =
-          await trimAudioToFitVideo(_currentVideoPath, file.path);
-      if (updatedPath != null) {
-        setState(() {
-          _currentVideoPath = updatedPath;
-          isAudioSelected = true;
-          fileName = result.files.first.name;
-        });
-      }
 
-      _replayVideo(_currentVideoPath);
+      String outputVideoPath = await getOutputFilePath();
+
+      // FFmpeg command to trim audio and combine it with the video
+      String command =
+          '-i $_currentVideoPath -i ${file.path} -c:v copy -map 0:v -map 1:a -shortest $outputVideoPath';
+      await _runFFmpegCommand(command, outputPath: outputVideoPath);
     }
   }
 
   void _removeAudio() async {
-    String updatedPath = await removeAudioFromVideo(_currentVideoPath);
-
-    setState(() {
-      _currentVideoPath = updatedPath;
-      isAudioSelected = false;
-    });
-
-    _replayVideo(_currentVideoPath);
+    String outputVideoPath = await getOutputFilePath();
+    // FFmpeg command to trim audio and combine it with the video
+    String command = '-i $_currentVideoPath  -c:v copy -an $outputVideoPath';
+    await _runFFmpegCommand(command, outputPath: outputVideoPath);
   }
 
   void _flipVideo() async {
-    String updatedPath = await mirrorHorizontally(_currentVideoPath);
+    String outputVideoPath = await getOutputFilePath();
 
-    setState(() {
-      _currentVideoPath = updatedPath;
-    });
-
-    _replayVideo(_currentVideoPath);
+    // FFmpeg command to trim audio and combine it with the video
+    String command =
+        '-i $_currentVideoPath -vf hflip -c:a copy $outputVideoPath';
+    await _runFFmpegCommand(command, outputPath: outputVideoPath);
   }
 
   void _onSpeedChange() {
@@ -332,14 +324,27 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       context,
       _buttonKey,
       (speed) async {
+        isProcesing(true);
         double videoSpeed = double.tryParse(speed) ?? 1;
         if (videoSpeed == 1) return;
-        String path = await changeSpeed(_currentVideoPath, videoSpeed);
-        setState(() {
-          _currentVideoPath = path;
-        });
-        _replayVideo(path);
+        String outputVideoPath = await getOutputFilePath();
+        String command =
+            '-i $_currentVideoPath -filter_complex "[0:v]setpts=1/$speed*PTS[v];[0:a]atempo=$speed[a]" -map "[v]" -map "[a]" $outputVideoPath';
+        await _runFFmpegCommand(command, outputPath: outputVideoPath);
       },
     );
+  }
+
+  void _onAdjust() async {
+    final outputPath = await getOutputFilePath();
+    // Directory tempDir = await getTemporaryDirectory();
+
+    // File tempVideo = File("${tempDir.path}output1.mp4")
+    //   ..createSync(recursive: true);
+    // final outputPath = tempVideo.path;
+    log("herererereresfsfsfsdfsdf");
+    final command =
+        '-i $_currentVideoPath - "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" $outputPath';
+    await _runFFmpegCommand(command, outputPath: outputPath);
   }
 }

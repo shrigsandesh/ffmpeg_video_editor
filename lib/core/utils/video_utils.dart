@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/return_code.dart';
 import 'package:ffmpeg_video_editor/core/service/ffmpeg_service.dart';
 import 'package:ffmpeg_video_editor/core/utils/ffmpeg_commands.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
@@ -10,8 +10,6 @@ import 'package:path_provider/path_provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
-import 'package:ffmpeg_video_editor/core/service/ffmpeg_service2.dart'
-    as service;
 
 Future<String> trimVideo(
     String inputPath, double startTrim, double endTrim) async {
@@ -139,23 +137,6 @@ Future<String> removeSectionFromVideo({
   return outputPath;
 }
 
-Future<String> zoomVideo(String inputFilePath, int startFrame) async {
-  final outputPath = await getOutputFilePath();
-
-  String command =
-      '-i "$inputFilePath" -vf "scale=2*iw:-1,crop=iw/2:ih/2" "$outputPath"';
-  final result = await FFmpegKit.execute(command);
-
-  // Check the result
-  final returnCode = await result.getReturnCode();
-  if (ReturnCode.isSuccess(returnCode)) {
-    log("Zoom applied successfully and saved to $outputPath");
-  } else {
-    log("Error occurred: ${await result.getOutput()}");
-  }
-  return outputPath;
-}
-
 Future<void> addSubtitlesToVideo(String videoPath) async {
   File subtitle = await loadSrtFromAssets('assets/subtitles.srt');
   String subtitlePath = subtitle.path;
@@ -171,46 +152,6 @@ Future<void> addSubtitlesToVideo(String videoPath) async {
       log('Error adding subtitles');
     }
   });
-}
-
-Future<File?> joinVideos(List<File> videoFiles) async {
-  if (videoFiles.isEmpty) {
-    throw ArgumentError('No video files provided.');
-  }
-
-  String outputPath = await getOutputFilePath();
-
-  // Create a file list in the format required by ffmpeg.
-  final String inputFilePath =
-      p.join((await getTemporaryDirectory()).path, 'input_list.txt');
-  final inputFile = File(inputFilePath);
-
-  // Write the file paths to the input list.
-  final inputString =
-      videoFiles.map((file) => "file '${file.path}'").join('\n');
-  await inputFile.writeAsString(inputString);
-
-  log(inputString.toString());
-
-  // ffmpeg command to join the video files.
-
-  final String ffmpegCommand =
-      joinCommand(inputfilesPath: inputFile.path, outputVideoPath: outputPath);
-
-  log(joinCommand(inputfilesPath: inputFilePath, outputVideoPath: outputPath)
-      .toString());
-  // final String ffmpegCommand =
-  //     "-f concat -safe 0 -i ${inputFile.path} -c copy $outputPath";
-
-  await FFMPEGService().runSyncFFmpegCommand(ffmpegCommand);
-
-  final outputFile = File(outputPath);
-  if (await outputFile.exists()) {
-    return outputFile;
-  } else {
-    log("something went wrong");
-    return null; // Return null if something went wrong.
-  }
 }
 
 Future<String?> mergeVideos(List<AssetEntity> pickedVideos) async {
@@ -239,73 +180,58 @@ Future<String?> mergeVideos(List<AssetEntity> pickedVideos) async {
   return null;
 }
 
-Future<String?> trimAudioToFitVideo(String videoPath, String audioPath) async {
-  String outputVideoPath = await getOutputFilePath();
+Future<File?> joinVideos(List<File> videoFiles) async {
+  if (videoFiles.isEmpty) {
+    throw ArgumentError('No video files provided.');
+  }
 
-  // FFmpeg command to trim audio and combine it with the video
-  String ffmpegCommand =
-      '-i $videoPath -i $audioPath -c:v copy -map 0:v -map 1:a -shortest $outputVideoPath';
+  // Step 1: Prepare temporary directory for scaled videos
+  final tempDir = await getTemporaryDirectory();
+  final scaledVideos = <File>[];
 
-  await FFmpegKit.execute(ffmpegCommand).then((session) async {
-    final returnCode = await session.getReturnCode();
-    if (ReturnCode.isSuccess(returnCode)) {
-      log('Audio trimmed and added successfully to video.');
+  // Step 2: Scale each video and store in temporary directory
+  for (var i = 0; i < videoFiles.length; i++) {
+    final inputPath = videoFiles[i].path;
+    final scaledVideoPath = p.join(tempDir.path, 'scaled_video_$i.mp4');
+
+    final String scaleCommand =
+        '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" $scaledVideoPath';
+
+    await FFMPEGService().runSyncFFmpegCommand(scaleCommand);
+
+    final scaledVideo = File(scaledVideoPath);
+    if (await scaledVideo.exists()) {
+      scaledVideos.add(scaledVideo);
     } else {
-      log('Failed to trim audio or combine it with video.');
+      log("Failed to scale video: $inputPath");
       return null;
     }
-  });
-  return outputVideoPath;
-}
+  }
 
-Future<String> removeAudioFromVideo(String videoPath) async {
-  String outputVideoPath = await getOutputFilePath();
+  // Step 3: Create input list for FFmpeg
+  final String inputListPath = p.join(tempDir.path, 'input_list.txt');
+  final inputListFile = File(inputListPath);
+  final inputString =
+      scaledVideos.map((file) => "file '${file.path}'").join('\n');
+  await inputListFile.writeAsString(inputString);
 
-  // FFmpeg command to trim audio and combine it with the video
-  String ffmpegCommand = '-i $videoPath  -c:v copy -an $outputVideoPath';
+  log("Input list:\n$inputString");
 
-  await FFmpegKit.execute(ffmpegCommand).then((session) async {
-    final returnCode = await session.getReturnCode();
-    if (ReturnCode.isSuccess(returnCode)) {
-      log('Audio deleted sucessfully.');
-    } else {
-      log('Failed to delete audio.');
-      return null;
-    }
-  });
-  return outputVideoPath;
-}
+  // Step 4: Join scaled videos
+  final String outputPath = await getOutputFilePath();
+  final String ffmpegCommand = joinCommand(
+    inputfilesPath: inputListFile.path,
+    outputVideoPath: outputPath,
+  );
 
-Future<String> mirrorHorizontally(String videoPath) async {
-  String outputVideoPath = await getOutputFilePath();
+  await FFMPEGService().runSyncFFmpegCommand(ffmpegCommand);
 
-  // FFmpeg command to trim audio and combine it with the video
-  String ffmpegCommand = '-i $videoPath -vf hflip -c:a copy $outputVideoPath';
-
-  await FFmpegKit.execute(ffmpegCommand).then((session) async {
-    final returnCode = await session.getReturnCode();
-    if (ReturnCode.isSuccess(returnCode)) {
-      log('Video flipped sucessfully.');
-    } else {
-      log('fail to flip video.');
-    }
-  });
-  return outputVideoPath;
-}
-
-Future<String> changeSpeed(String videoPath, double speed) async {
-  String outputVideoPath = await getOutputFilePath();
-
-  String ffmpegCommand =
-      '-i $videoPath -filter_complex "[0:v]setpts=1/$speed*PTS[v];[0:a]atempo=$speed[a]" -map "[v]" -map "[a]" $outputVideoPath';
-
-  service.FFmpegService fFmpegService = service.FFmpegService();
-
-  await fFmpegService.runFFmpegCommand(ffmpegCommand, onSuccess: (output) {
-    log("successfully changed the speed of the video");
-  }, onFailure: (error) {
-    log('error changing the speed of the video');
-  });
-
-  return outputVideoPath;
+  // Step 5: Verify and return the final output video
+  final outputFile = File(outputPath);
+  if (await outputFile.exists()) {
+    return outputFile;
+  } else {
+    log("Something went wrong during video joining.");
+    return null;
+  }
 }

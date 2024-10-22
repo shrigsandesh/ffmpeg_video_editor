@@ -4,6 +4,7 @@ part of 'video_picker_cubit.dart';
 class VideoPickerState with _$VideoPickerState {
   const VideoPickerState._();
   const factory VideoPickerState({
+    @Default(false) isLoading,
     @Default([]) List<AssetEntity> allFiles,
     @Default([]) List<AssetEntity> videoFiles,
     @Default([]) List<AssetEntity> pickedVideos,

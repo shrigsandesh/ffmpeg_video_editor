@@ -16,6 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$VideoPickerState {
+  dynamic get isLoading => throw _privateConstructorUsedError;
   List<AssetEntity> get allFiles => throw _privateConstructorUsedError;
   List<AssetEntity> get videoFiles => throw _privateConstructorUsedError;
   List<AssetEntity> get pickedVideos => throw _privateConstructorUsedError;
@@ -35,7 +36,8 @@ abstract class $VideoPickerStateCopyWith<$Res> {
       _$VideoPickerStateCopyWithImpl<$Res, VideoPickerState>;
   @useResult
   $Res call(
-      {List<AssetEntity> allFiles,
+      {dynamic isLoading,
+      List<AssetEntity> allFiles,
       List<AssetEntity> videoFiles,
       List<AssetEntity> pickedVideos,
       List<AssetEntity> imageFiles});
@@ -56,12 +58,17 @@ class _$VideoPickerStateCopyWithImpl<$Res, $Val extends VideoPickerState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? isLoading = freezed,
     Object? allFiles = null,
     Object? videoFiles = null,
     Object? pickedVideos = null,
     Object? imageFiles = null,
   }) {
     return _then(_value.copyWith(
+      isLoading: freezed == isLoading
+          ? _value.isLoading
+          : isLoading // ignore: cast_nullable_to_non_nullable
+              as dynamic,
       allFiles: null == allFiles
           ? _value.allFiles
           : allFiles // ignore: cast_nullable_to_non_nullable
@@ -91,7 +98,8 @@ abstract class _$$VideoPickerStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {List<AssetEntity> allFiles,
+      {dynamic isLoading,
+      List<AssetEntity> allFiles,
       List<AssetEntity> videoFiles,
       List<AssetEntity> pickedVideos,
       List<AssetEntity> imageFiles});
@@ -110,12 +118,14 @@ class __$$VideoPickerStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? isLoading = freezed,
     Object? allFiles = null,
     Object? videoFiles = null,
     Object? pickedVideos = null,
     Object? imageFiles = null,
   }) {
     return _then(_$VideoPickerStateImpl(
+      isLoading: freezed == isLoading ? _value.isLoading! : isLoading,
       allFiles: null == allFiles
           ? _value._allFiles
           : allFiles // ignore: cast_nullable_to_non_nullable
@@ -140,7 +150,8 @@ class __$$VideoPickerStateImplCopyWithImpl<$Res>
 
 class _$VideoPickerStateImpl extends _VideoPickerState {
   const _$VideoPickerStateImpl(
-      {final List<AssetEntity> allFiles = const [],
+      {this.isLoading = false,
+      final List<AssetEntity> allFiles = const [],
       final List<AssetEntity> videoFiles = const [],
       final List<AssetEntity> pickedVideos = const [],
       final List<AssetEntity> imageFiles = const []})
@@ -150,6 +161,9 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
         _imageFiles = imageFiles,
         super._();
 
+  @override
+  @JsonKey()
+  final dynamic isLoading;
   final List<AssetEntity> _allFiles;
   @override
   @JsonKey()
@@ -188,7 +202,7 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
 
   @override
   String toString() {
-    return 'VideoPickerState(allFiles: $allFiles, videoFiles: $videoFiles, pickedVideos: $pickedVideos, imageFiles: $imageFiles)';
+    return 'VideoPickerState(isLoading: $isLoading, allFiles: $allFiles, videoFiles: $videoFiles, pickedVideos: $pickedVideos, imageFiles: $imageFiles)';
   }
 
   @override
@@ -196,6 +210,7 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$VideoPickerStateImpl &&
+            const DeepCollectionEquality().equals(other.isLoading, isLoading) &&
             const DeepCollectionEquality().equals(other._allFiles, _allFiles) &&
             const DeepCollectionEquality()
                 .equals(other._videoFiles, _videoFiles) &&
@@ -208,6 +223,7 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      const DeepCollectionEquality().hash(isLoading),
       const DeepCollectionEquality().hash(_allFiles),
       const DeepCollectionEquality().hash(_videoFiles),
       const DeepCollectionEquality().hash(_pickedVideos),
@@ -225,12 +241,15 @@ class _$VideoPickerStateImpl extends _VideoPickerState {
 
 abstract class _VideoPickerState extends VideoPickerState {
   const factory _VideoPickerState(
-      {final List<AssetEntity> allFiles,
+      {final dynamic isLoading,
+      final List<AssetEntity> allFiles,
       final List<AssetEntity> videoFiles,
       final List<AssetEntity> pickedVideos,
       final List<AssetEntity> imageFiles}) = _$VideoPickerStateImpl;
   const _VideoPickerState._() : super._();
 
+  @override
+  dynamic get isLoading;
   @override
   List<AssetEntity> get allFiles;
   @override

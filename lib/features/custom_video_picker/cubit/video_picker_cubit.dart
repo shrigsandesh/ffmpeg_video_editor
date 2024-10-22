@@ -10,6 +10,7 @@ class VideoPickerCubit extends Cubit<VideoPickerState> {
   VideoPickerCubit() : super(const VideoPickerState());
 
   Future<void> loadVideos() async {
+    emit(state.copyWith(isLoading: true));
     // Get the list of albums
     List<AssetPathEntity> albums = await PhotoManager.getAssetPathList();
 
@@ -26,6 +27,7 @@ class VideoPickerCubit extends Cubit<VideoPickerState> {
         assets.where((asset) => asset.type == AssetType.image).toList();
 
     emit(state.copyWith(
+      isLoading: false,
       allFiles: assets,
       videoFiles: videos,
       imageFiles: images,

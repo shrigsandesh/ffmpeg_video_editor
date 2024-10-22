@@ -64,6 +64,11 @@ class _VideoPickerPageState extends State<VideoPickerPage>
           buildWhen: (previous, current) =>
               previous.allFiles.length != current.allFiles.length,
           builder: (context, state) {
+            if (state.isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
             return TabBarView(controller: _tabController, children: [
               _VideoPickerBody(
                 fileList: state.allFiles,
