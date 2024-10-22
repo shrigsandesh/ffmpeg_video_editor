@@ -9,7 +9,6 @@ import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:path_provider/path_provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
-import 'package:photo_manager/photo_manager.dart';
 
 Future<String> trimVideo(
     String inputPath, double startTrim, double endTrim) async {
@@ -154,32 +153,6 @@ Future<void> addSubtitlesToVideo(String videoPath) async {
   });
 }
 
-Future<String?> mergeVideos(List<AssetEntity> pickedVideos) async {
-  List<String> videoPaths = [];
-  for (AssetEntity video in pickedVideos) {
-    // Retrieve the File for each video
-    File? videoFile = await video.file;
-    if (videoFile != null) {
-      videoPaths.add(videoFile.path); // Add the file path to the list
-    }
-  }
-  String outputPath = await getOutputFilePath();
-  String concatCommand = "concat:${videoPaths.join('|')}";
-  String command = "-i \"$concatCommand\" -c copy $outputPath";
-
-  await FFmpegKit.execute(command).then((session) async {
-    final returnCode = await session.getReturnCode();
-    if (ReturnCode.isSuccess(returnCode)) {
-      log('Merge successful');
-      return outputPath;
-    } else {
-      log('Merge failed');
-      return null;
-    }
-  });
-  return null;
-}
-
 Future<File?> joinVideos(List<File> videoFiles) async {
   if (videoFiles.isEmpty) {
     throw ArgumentError('No video files provided.');
@@ -193,18 +166,23 @@ Future<File?> joinVideos(List<File> videoFiles) async {
   for (var i = 0; i < videoFiles.length; i++) {
     final inputPath = videoFiles[i].path;
     final scaledVideoPath = p.join(tempDir.path, 'scaled_video_$i.mp4');
+    if (inputPath.endsWith('.jpg') || inputPath.endsWith('.png')) {
+      final String command =
+          '-loop 1 -i $inputPath -t 1 -vf "scale=720:1080" -pix_fmt yuv420p -preset ultrafast $scaledVideoPath';
+      await FFMPEGService().runSyncFFmpegCommand(command);
+    } else {
+      final String scaleCommand =
+          '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" -preset ultrafast $scaledVideoPath';
 
-    final String scaleCommand =
-        '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" $scaledVideoPath';
-
-    await FFMPEGService().runSyncFFmpegCommand(scaleCommand);
+      await FFMPEGService().runSyncFFmpegCommand(scaleCommand);
+    }
 
     final scaledVideo = File(scaledVideoPath);
     if (await scaledVideo.exists()) {
       scaledVideos.add(scaledVideo);
     } else {
       log("Failed to scale video: $inputPath");
-      return null;
+      continue;
     }
   }
 
