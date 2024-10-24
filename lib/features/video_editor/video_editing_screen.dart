@@ -202,6 +202,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    log(widget.filePath.toString());
     return Scaffold(
       backgroundColor: const Color(0xff1A1D21),
       appBar: AppBar(
@@ -299,7 +300,12 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
       // FFmpeg command to trim audio and combine it with the video
       String command =
           '-i $_currentVideoPath -i ${file.path} -c:v copy -map 0:v -map 1:a -shortest $outputVideoPath';
-      await _runFFmpegCommand(command, outputPath: outputVideoPath);
+      await _runFFmpegCommand(command, outputPath: outputVideoPath).then((_) {
+        setState(() {
+          isAudioSelected = true;
+          fileName = result.files.single.name;
+        });
+      });
     }
   }
 
@@ -307,7 +313,11 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     String outputVideoPath = await getOutputFilePath();
     // FFmpeg command to trim audio and combine it with the video
     String command = '-i $_currentVideoPath  -c:v copy -an $outputVideoPath';
-    await _runFFmpegCommand(command, outputPath: outputVideoPath);
+    await _runFFmpegCommand(command, outputPath: outputVideoPath).then((_) {
+      setState(() {
+        isAudioSelected = false;
+      });
+    });
   }
 
   void _flipVideo() async {

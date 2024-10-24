@@ -194,6 +194,7 @@ Future<File?> joinVideos(List<File> videoFiles) async {
   await inputListFile.writeAsString(inputString);
 
   log("Input list:\n$inputString");
+  log(scaledVideos.toList().toString());
 
   // Step 4: Join scaled videos
   final String outputPath = await getOutputFilePath();

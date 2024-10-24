@@ -10,7 +10,7 @@ class ExportLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircularPercentIndicator(
       radius: 40,
-      percent: progress / 100,
+      percent: (progress / 100) > 1 ? 1.0 : (progress / 100),
       center: Text(
         "${progress.truncate()}%",
         style: const TextStyle(color: Colors.white),
