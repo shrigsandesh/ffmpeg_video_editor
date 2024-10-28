@@ -4,7 +4,7 @@ String grayscaleCommand(
 
 String joinCommand(
         {required String inputfilesPath, required String outputVideoPath}) =>
-    "-f concat -safe 0 -i $inputfilesPath -c copy $outputVideoPath";
+    "-y -f concat -safe 0 -i $inputfilesPath -c copy $outputVideoPath";
 
 String trimCommand(
         {required String inputVideoPath,

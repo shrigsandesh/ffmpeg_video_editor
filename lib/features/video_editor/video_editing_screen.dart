@@ -353,8 +353,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     //   ..createSync(recursive: true);
     // final outputPath = tempVideo.path;
     log("herererereresfsfsfsdfsdf");
-    final command =
-        '-i $_currentVideoPath - "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" $outputPath';
+    String command =
+        """-i $_currentVideoPath -vf "drawtext=text='Watermark Text':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10" -codec:a copy $outputPath""";
     await _runFFmpegCommand(command, outputPath: outputPath);
   }
 }
