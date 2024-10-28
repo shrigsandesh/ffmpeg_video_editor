@@ -45,6 +45,10 @@ flutter:
     - assets/
     - assets/sample.mp4
     - assets/subtitles.srt
+  fonts:
+    - family: Roboto-Regular
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf  
 
 
 

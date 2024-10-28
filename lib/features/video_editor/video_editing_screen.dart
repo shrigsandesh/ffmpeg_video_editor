@@ -346,6 +346,8 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   }
 
   void _onAdjust() async {
+    final fontPath = await getFontPath();
+
     final outputPath = await getOutputFilePath();
     // Directory tempDir = await getTemporaryDirectory();
 
@@ -354,7 +356,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     // final outputPath = tempVideo.path;
     log("herererereresfsfsfsdfsdf");
     String command =
-        """-i $_currentVideoPath -vf "drawtext=text='Watermark Text':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10" -codec:a copy $outputPath""";
+        """-i $_currentVideoPath -vf ""drawtext=text='Watermark Text':fontfile='$fontPath':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10"" -codec:a copy $outputPath""";
     await _runFFmpegCommand(command, outputPath: outputPath);
   }
 }

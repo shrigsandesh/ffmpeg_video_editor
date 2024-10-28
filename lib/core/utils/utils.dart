@@ -65,3 +65,15 @@ Future<void> deleteTemporaryFile(String filePath) async {
     await Directory(filePath).delete(recursive: true);
   } catch (_) {}
 }
+
+Future<String> getFontPath() async {
+  final directory = await getApplicationDocumentsDirectory();
+  final fontFile = File('${directory.path}/Roboto-Regular.ttf');
+
+  // Copy the font from assets to the file system if it doesn't exist.
+  if (!fontFile.existsSync()) {
+    final byteData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    await fontFile.writeAsBytes(byteData.buffer.asUint8List());
+  }
+  return fontFile.path;
+}
