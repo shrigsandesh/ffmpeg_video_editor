@@ -267,16 +267,20 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
             ),
             const SizedBox(height: 20),
             EditingOptions(
-              key: _buttonKey,
-              onfilter: _applyFilter,
-              onTrimAndSave: _trimAndSave,
-              onDeleteSection: _deleteSection,
-              onZoom: _zoomIntoVideo,
-              onAddSubitles: () {},
-              onFlip: _flipVideo,
-              onSpeedChange: _onSpeedChange,
-              onAdjust: _onAdjust,
-            ),
+                key: _buttonKey,
+                onfilter: _applyFilter,
+                onTrimAndSave: _trimAndSave,
+                onDeleteSection: _deleteSection,
+                onZoom: _zoomIntoVideo,
+                onAddSubitles: () {},
+                onFlip: _flipVideo,
+                onSpeedChange: _onSpeedChange,
+                onAdjust: () async {
+                  final outputPath = await getOutputFilePath();
+                  addImageWatermark(_currentVideoPath, outputPath);
+                }
+                // _onAdjust,
+                ),
           ],
         ),
       ),
@@ -345,18 +349,25 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     );
   }
 
-  void _onAdjust() async {
-    final fontPath = await getFontPath();
+  // void _onAdjust() async {
+  //   final fontPath = await getFontPath();
 
-    final outputPath = await getOutputFilePath();
-    // Directory tempDir = await getTemporaryDirectory();
+  //   final outputPath = await getOutputFilePath();
+  //   // Directory tempDir = await getTemporaryDirectory();
 
-    // File tempVideo = File("${tempDir.path}output1.mp4")
-    //   ..createSync(recursive: true);
-    // final outputPath = tempVideo.path;
-    log("herererereresfsfsfsdfsdf");
+  //   // File tempVideo = File("${tempDir.path}output1.mp4")
+  //   //   ..createSync(recursive: true);
+  //   // final outputPath = tempVideo.path;
+  //   log("herererereresfsfsfsdfsdf");
+  //   String command =
+  //       """-i $_currentVideoPath -vf ""drawtext=text='Watermark Text':fontfile='$fontPath':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10"" -codec:a copy $outputPath""";
+  //   await _runFFmpegCommand(command, outputPath: outputPath);
+  // }
+
+  void addImageWatermark(String inputPath, String outputPath) async {
+    final watermarkPath = await getWatermarkPath();
     String command =
-        """-i $_currentVideoPath -vf ""drawtext=text='Watermark Text':fontfile='$fontPath':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10"" -codec:a copy $outputPath""";
+        """-i $inputPath -i $watermarkPath -filter_complex "overlay=W-w-10:H-h-10" -codec:a copy $outputPath""";
     await _runFFmpegCommand(command, outputPath: outputPath);
   }
 }

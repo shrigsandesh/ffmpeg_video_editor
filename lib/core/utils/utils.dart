@@ -77,3 +77,15 @@ Future<String> getFontPath() async {
   }
   return fontFile.path;
 }
+
+Future<String> getWatermarkPath() async {
+  final directory = await getApplicationDocumentsDirectory();
+  final watermarkFile = File('${directory.path}/watermark.png');
+
+  // Copy the image from assets to the file system if it doesn't exist.
+  if (!watermarkFile.existsSync()) {
+    final byteData = await rootBundle.load('assets/images/logo.png');
+    await watermarkFile.writeAsBytes(byteData.buffer.asUint8List());
+  }
+  return watermarkFile.path;
+}
