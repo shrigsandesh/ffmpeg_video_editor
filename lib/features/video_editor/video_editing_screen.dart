@@ -290,6 +290,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   @override
   void dispose() {
     _editorController?.dispose();
+    _editorController?.video.dispose();
     super.dispose();
   }
 
@@ -358,7 +359,6 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
   //   // File tempVideo = File("${tempDir.path}output1.mp4")
   //   //   ..createSync(recursive: true);
   //   // final outputPath = tempVideo.path;
-  //   log("herererereresfsfsfsdfsdf");
   //   String command =
   //       """-i $_currentVideoPath -vf ""drawtext=text='Watermark Text':fontfile='$fontPath':fontcolor=white:fontsize=24:x=w-tw-10:y=h-th-10"" -codec:a copy $outputPath""";
   //   await _runFFmpegCommand(command, outputPath: outputPath);

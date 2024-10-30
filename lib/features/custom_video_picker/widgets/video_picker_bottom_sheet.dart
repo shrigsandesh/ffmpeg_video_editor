@@ -48,7 +48,12 @@ class _VideoPickerBottomSheetState extends State<VideoPickerBottomSheet> {
               builder: (context, isLoading, _) => _SelectedButton(
                 count: state.totalSelected,
                 isLoading: isLoading,
-                onPressed: () => _handleVideoSelection(context, state),
+                onPressed: () {
+                  _handleVideoSelection(context, state);
+                  if (mounted) {
+                    context.read<VideoPickerCubit>().clearSelected();
+                  }
+                },
               ),
             ),
           ],
@@ -63,21 +68,23 @@ class _VideoPickerBottomSheetState extends State<VideoPickerBottomSheet> {
       _showSnackbar(context, 'Select video first!');
       return;
     }
+//1730288925816
 
     isLoading.value = true;
     try {
       var videoPaths = await getVideoFiles(state.pickedVideos);
 
-      final file = await joinVideos(videoPaths);
+      var file = await joinVideos(videoPaths);
+      log("updated file: ${file?.path}");
 
       if (file != null && context.mounted) {
         _navigateToEditingScreen(context, file.path, state.pickedVideos);
       }
     } catch (e, stackTrace) {
-      log(e.toString());
       log(stackTrace.toString());
     } finally {
       isLoading.value = false;
+      setState(() {});
     }
   }
 
@@ -114,9 +121,6 @@ class _SelectedVideosList extends StatelessWidget {
         itemCount: pickedVideos.length,
         itemBuilder: (context, index) {
           final video = pickedVideos[index];
-          log("$index : ${video.orientation}");
-          log(video.orientatedSize.toString());
-          log(video.width.toString());
 
           return _SelectedVideoThumbnail(
             key: ValueKey(video.id),

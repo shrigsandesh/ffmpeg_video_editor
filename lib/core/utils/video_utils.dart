@@ -165,12 +165,20 @@ Future<File?> joinVideos(List<File> videoFiles) async {
   // Step 2: Scale each video and store in temporary directory
   for (var i = 0; i < videoFiles.length; i++) {
     final inputPath = videoFiles[i].path;
-    final scaledVideoPath = p.join(tempDir.path, 'scaled_video_$i.mp4');
+    final uniqueId = DateTime.now().millisecondsSinceEpoch;
+    final scaledVideoPath =
+        p.join(tempDir.path, 'scaled_video_$uniqueId$i.mp4');
     if (inputPath.endsWith('.jpg') || inputPath.endsWith('.png')) {
+      // final String command = '-loop 1 -i $inputPath -t 1 -vf "scale=720:1080" '
+      //     '-c:v h264_mediacodec -pix_fmt yuv420p $scaledVideoPath';
       final String command =
           '-loop 1 -i $inputPath -t 1 -vf "scale=720:1080" -pix_fmt yuv420p -preset ultrafast $scaledVideoPath';
       await FFMPEGService().runSyncFFmpegCommand(command);
     } else {
+      // final String scaleCommand =
+      //     '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,'
+      //     'pad=720:1280:-1:-1:color=black" '
+      //     '-c:v h264_mediacodec -pix_fmt yuv420p -threads 4 $scaledVideoPath';
       final String scaleCommand =
           '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" -preset ultrafast $scaledVideoPath';
 

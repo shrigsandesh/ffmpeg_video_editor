@@ -57,4 +57,12 @@ class VideoPickerCubit extends Cubit<VideoPickerState> {
       ),
     );
   }
+
+  void clearSelected() {
+    emit(
+      state.copyWith(
+        pickedVideos: [],
+      ),
+    );
+  }
 }
