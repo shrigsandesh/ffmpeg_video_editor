@@ -109,7 +109,7 @@ class _VideoPickerBody extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            VideoThumbnail(thumbnailData: video.thumbnailData),
+            VideoThumbnailWidget(thumbnailData: video.thumbnailData),
             BlocBuilder<VideoPickerCubit, VideoPickerState>(
               builder: (context, state) {
                 final isSelected = state.pickedVideos

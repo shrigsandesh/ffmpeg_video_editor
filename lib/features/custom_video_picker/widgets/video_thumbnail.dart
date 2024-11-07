@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class VideoThumbnail extends StatelessWidget {
-  const VideoThumbnail(
+class VideoThumbnailWidget extends StatelessWidget {
+  const VideoThumbnailWidget(
       {super.key, required this.thumbnailData, this.size, this.radius});
 
   final Future<Uint8List?> thumbnailData;

@@ -150,7 +150,7 @@ class _SelectedVideoThumbnail extends StatelessWidget {
       child: Stack(
         alignment: Alignment.centerLeft,
         children: [
-          VideoThumbnail(
+          VideoThumbnailWidget(
             thumbnailData: video.thumbnailData,
             size: _thumbnailSize,
             radius: 8,

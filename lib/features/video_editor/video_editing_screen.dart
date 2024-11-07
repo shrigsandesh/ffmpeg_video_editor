@@ -5,10 +5,10 @@ import 'package:ffmpeg_video_editor/core/utils/ffmpeg_commands.dart';
 import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:ffmpeg_video_editor/core/utils/video_utils.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/audio_picker.dart';
+import 'package:ffmpeg_video_editor/features/video_editor/widgets/auto_scrolling_timeline.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/popuup_menu.dart';
-import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -30,18 +30,18 @@ class VideoEditingScreen extends StatefulWidget {
 class _VideoEditingScreenState extends State<VideoEditingScreen> {
   VideoEditorController? _editorController;
   late String _currentVideoPath;
-  // String _videoSize = '';
   bool isProcessing = false;
   double progress = 0.0;
   String fps = '';
   bool isAudioSelected = false;
   String fileName = '';
   final GlobalKey _buttonKey = GlobalKey();
-
+  List<File> videoThumbnails = [];
   @override
   void initState() {
     super.initState();
     _loadVideo();
+    _getVideoThumbnails();
   }
 
   Future<void> _initializeAndPlayVideo(String videoPath) async {
@@ -202,7 +202,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log(widget.filePath.toString());
+    log(videoThumbnails.toString());
     return Scaffold(
       backgroundColor: const Color(0xff1A1D21),
       appBar: AppBar(
@@ -258,7 +258,15 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_editorController?.initialized == true)
-              TrimmerTimeline(controller: _editorController!),
+              AutoScrollingThumbnails(
+                controller: _editorController!,
+                imagePaths: videoThumbnails,
+                imageHeight: 100,
+                imageWidth: 60,
+                scrollDuration: const Duration(seconds: 1),
+                scrollInterval: const Duration(milliseconds: 400),
+              ),
+            // TrimmerTimeline(controller: _editorController!),
             AudioPicker(
               isAudioSelected: isAudioSelected,
               onTap: _pickAudio,
@@ -369,5 +377,14 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     String command =
         """-i $inputPath -i $watermarkPath -filter_complex "overlay=W-w-10:H-h-10" -codec:a copy $outputPath""";
     await _runFFmpegCommand(command, outputPath: outputPath);
+  }
+
+  void _getVideoThumbnails() async {
+    final duration = await FFMPEGService().getVideoDuration(_currentVideoPath);
+    var durationInInt = duration.toInt();
+    videoThumbnails =
+        await generateThumbnails(durationInInt, _currentVideoPath);
+    log(videoThumbnails.toString());
+    setState(() {});
   }
 }

@@ -175,12 +175,10 @@ Future<File?> joinVideos(List<File> videoFiles) async {
           '-loop 1 -i $inputPath -t 1 -vf "scale=720:1080" -pix_fmt yuv420p -preset ultrafast $scaledVideoPath';
       await FFMPEGService().runSyncFFmpegCommand(command);
     } else {
-      // final String scaleCommand =
-      //     '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,'
-      //     'pad=720:1280:-1:-1:color=black" '
-      //     '-c:v h264_mediacodec -pix_fmt yuv420p -threads 4 $scaledVideoPath';
       final String scaleCommand =
-          '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:-1:-1:color=black" -preset ultrafast $scaledVideoPath';
+          '-i $inputPath -vf "scale=720:1280:force_original_aspect_ratio=decrease,'
+          'pad=720:1280:-1:-1:color=black" '
+          '-c:v h264_mediacodec -pix_fmt yuv420p -threads 4 $scaledVideoPath';
 
       await FFMPEGService().runSyncFFmpegCommand(scaleCommand);
     }

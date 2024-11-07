@@ -1,3 +1,4 @@
+import 'package:ffmpeg_video_editor/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:video_editor/video_editor.dart';
 
@@ -85,9 +86,4 @@ class TrimmerTimeline extends StatelessWidget {
       ],
     );
   }
-
-  String formatter(Duration duration) => [
-        duration.inMinutes.remainder(60).toString().padLeft(2, '0'),
-        duration.inSeconds.remainder(60).toString().padLeft(2, '0')
-      ].join(":");
 }

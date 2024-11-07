@@ -30,6 +30,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   freezed: ^2.5.7
   ffmpeg_kit_flutter_full_gpl: ^6.0.3
+  video_thumbnail: ^0.5.3
  
 dev_dependencies:
   flutter_test:
