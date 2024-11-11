@@ -56,7 +56,7 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
     await _editorController?.initialize().then((_) {
       // Force the aspect ratio and orientation based on the metadata
       setState(() {
-        _editorController?.video.play();
+        _editorController?.video.setLooping(false);
       });
     });
   }
@@ -265,14 +265,17 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                 imageWidth: 60,
                 scrollDuration: const Duration(seconds: 1),
                 scrollInterval: const Duration(milliseconds: 400),
+                onAddSound: _pickAudio,
+                selectedAudioFileName: fileName,
+                isAudioSelected: isAudioSelected,
               ),
             // TrimmerTimeline(controller: _editorController!),
-            AudioPicker(
-              isAudioSelected: isAudioSelected,
-              onTap: _pickAudio,
-              fileName: fileName,
-              onRemove: _removeAudio,
-            ),
+            // AudioPicker(
+            //   isAudioSelected: isAudioSelected,
+            //   onTap: _pickAudio,
+            //   fileName: fileName,
+            //   onRemove: _removeAudio,
+            // ),
             const SizedBox(height: 20),
             EditingOptions(
                 key: _buttonKey,

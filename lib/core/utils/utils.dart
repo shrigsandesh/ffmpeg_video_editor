@@ -94,10 +94,12 @@ Future<String> getWatermarkPath() async {
 Future<List<File>> generateThumbnails(
     int videoDurationInSec, String videoPath) async {
   List<File> thumbnails = [];
+  final uniqueId = DateTime.now().millisecondsSinceEpoch;
+
   for (int i = 0; i < videoDurationInSec; i++) {
     final thumbnailPath = await VideoThumbnail.thumbnailFile(
       video: videoPath,
-      thumbnailPath: "${(await getTemporaryDirectory()).path}/sample$i.png",
+      thumbnailPath: "${(await getTemporaryDirectory()).path}/s$uniqueId$i.png",
       imageFormat: ImageFormat.PNG,
       quality: 100,
       maxWidth: 50, // Thumbnail width size
