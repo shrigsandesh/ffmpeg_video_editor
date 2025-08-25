@@ -20,7 +20,9 @@ class FFmpegVideoEditorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: HomePage());
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+    );
   }
 }
 
@@ -61,18 +63,15 @@ class HomePage extends StatelessWidget {
               child: const Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.add_circle_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                  Icon(Icons.add_circle_rounded, color: Colors.white, size: 28),
                   Text(
                     "Add new project",
                     style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600),
-                  )
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -84,10 +83,9 @@ class HomePage extends StatelessWidget {
 
   void _selectVideoFile(BuildContext context) async {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const VideoPickerPage(),
-        ));
+      context,
+      MaterialPageRoute(builder: (context) => const VideoPickerPage()),
+    );
   }
 }
 

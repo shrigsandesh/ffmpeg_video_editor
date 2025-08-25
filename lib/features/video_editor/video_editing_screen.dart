@@ -9,6 +9,7 @@ import 'package:ffmpeg_video_editor/features/video_editor/widgets/auto_scrolling
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/editing_options.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/export_loading.dart';
 import 'package:ffmpeg_video_editor/features/video_editor/widgets/popuup_menu.dart';
+import 'package:ffmpeg_video_editor/features/video_editor/widgets/trimmer_timeline.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -269,13 +270,13 @@ class _VideoEditingScreenState extends State<VideoEditingScreen> {
                 selectedAudioFileName: fileName,
                 isAudioSelected: isAudioSelected,
               ),
-            // TrimmerTimeline(controller: _editorController!),
-            // AudioPicker(
-            //   isAudioSelected: isAudioSelected,
-            //   onTap: _pickAudio,
-            //   fileName: fileName,
-            //   onRemove: _removeAudio,
-            // ),
+            TrimmerTimeline(controller: _editorController!),
+            AudioPicker(
+              isAudioSelected: isAudioSelected,
+              onTap: _pickAudio,
+              fileName: fileName,
+              onRemove: _removeAudio,
+            ),
             const SizedBox(height: 20),
             EditingOptions(
                 key: _buttonKey,
